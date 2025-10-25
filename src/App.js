@@ -1,7 +1,7 @@
 import React from 'react';
 import { ShoppingCart, Plus, LogOut, User, Phone, MapPin } from 'lucide-react';
 import { db } from "./firebase";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, addDoc, getDocs, doc, updateDoc } from "firebase/firestore";
 
 // Simple hash function pour sécuriser les mots de passe
 const hashPassword = (password) => {
@@ -69,26 +69,18 @@ testFirebase();
     loadOrders();
   }, []);
 
-  const loadOrders = () => {
-    try {
-      const savedOrders = localStorage.getItem('bs_express_orders');
-      if (savedOrders) {
-        setOrders(JSON.parse(savedOrders));
-      }
-    } catch (error) {
-      console.log('Erreur lors du chargement:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const saveOrders = (newOrders) => {
-    try {
-      localStorage.setItem('bs_express_orders', JSON.stringify(newOrders));
-    } catch (error) {
-      console.error('Erreur lors de la sauvegarde:', error);
-    }
-  };
+const loadOrders = async () => {
+  setLoading(true);
+  try {
+    const snapshot = await getDocs(collection(db, "orders"));
+    const firebaseOrders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    setOrders(firebaseOrders.reverse());
+  } catch (error) {
+    console.error('Erreur Firebase:', error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const addToCart = (product) => {
     const existing = cart.find(item => item.id === product.id);
@@ -114,42 +106,54 @@ testFirebase();
   const getTotalPrice = () => cart.reduce((total, item) => total + (item.price * item.quantity), 0);
   const getTotalItems = () => cart.reduce((total, item) => total + item.quantity, 0);
 
-  const handleCheckout = () => {
-    if (!checkoutName || !checkoutPhone || !checkoutAddress) {
-      alert('Veuillez remplir tous les champs');
-      return;
-    }
-    const newOrder = {
-      id: Date.now(),
-      orderNumber: 'CMD-' + Date.now(),
-      clientName: checkoutName,
-      clientPhone: checkoutPhone,
-      clientAddress: checkoutAddress,
-      items: [...cart],
-      total: getTotalPrice(),
-      date: new Date().toLocaleDateString('fr-FR'),
-      time: new Date().toLocaleTimeString('fr-FR'),
-      status: 'En attente',
-      userId: user?.username || 'guest'
-    };
-    const updatedOrders = [newOrder, ...orders];
-    setOrders(updatedOrders);
-    saveOrders(updatedOrders);
+ const handleCheckout = async () => {
+  if (!checkoutName || !checkoutPhone || !checkoutAddress) {
+    alert('Veuillez remplir tous les champs');
+    return;
+  }
+
+  const newOrder = {
+    id: Date.now(),
+    orderNumber: 'CMD-' + Date.now(),
+    clientName: checkoutName,
+    clientPhone: checkoutPhone,
+    clientAddress: checkoutAddress,
+    items: [...cart],
+    total: getTotalPrice(),
+    date: new Date().toLocaleDateString('fr-FR'),
+    time: new Date().toLocaleTimeString('fr-FR'),
+    status: 'En attente',
+    userId: user?.username || 'guest'
+  };
+
+  try {
+    await addDoc(collection(db, "orders"), newOrder);
     alert('Commande confirmée! Numéro: ' + newOrder.orderNumber);
     setCart([]);
     setCheckoutName('');
     setCheckoutPhone('');
     setCheckoutAddress('');
     setCurrentPage('my-orders');
-  };
+  } catch (error) {
+    console.error('Erreur lors de la sauvegarde Firebase:', error);
+    alert('Erreur lors de la commande.');
+  }
+};
 
-  const updateOrderStatus = (orderId, newStatus) => {
-    const updatedOrders = orders.map(order =>
-      order.id === orderId ? { ...order, status: newStatus } : order
-    );
-    setOrders(updatedOrders);
-    saveOrders(updatedOrders);
-  };
+  const updateOrderStatus = async (orderId, newStatus) => {
+  const updatedOrders = orders.map(order =>
+    order.id === orderId ? { ...order, status: newStatus } : order
+  );
+  setOrders(updatedOrders);
+
+  try {
+    const orderRef = doc(db, "orders", orderId);
+    await updateDoc(orderRef, { status: newStatus });
+  } catch (error) {
+    console.error("Erreur de mise à jour Firebase:", error);
+  }
+};
+
 
   React.useEffect(() => {
     if (currentPage === 'checkout' && user) {
