@@ -1,5 +1,7 @@
 import React from 'react';
 import { ShoppingCart, Plus, LogOut, User, Phone, MapPin } from 'lucide-react';
+import { db } from "./firebase";
+import { collection, getDocs } from "firebase/firestore";
 
 // Simple hash function pour sécuriser les mots de passe
 const hashPassword = (password) => {
@@ -33,7 +35,16 @@ function App() {
     { id: 6, name: 'Produit Tendance 6', price: 3900, image: 'https://images.unsplash.com/photo-1491637639811-60e2756cc1c7?w=600' }
   ];
 
-  // Mots de passe hashés (admin123 et user123)
+async function testFirebase() {
+  const querySnapshot = await getDocs(collection(db, "orders"));
+  querySnapshot.forEach((doc) => {
+    console.log(doc.id, " => ", doc.data());
+  });
+}
+
+testFirebase();
+
+  // Mots de passe hashés
   const users = {
     admin: {
       username: 'admin',
@@ -53,7 +64,7 @@ function App() {
     }
   };
 
-  // Charger les commandes au démarrage
+  // Charger les commandes
   React.useEffect(() => {
     loadOrders();
   }, []);
@@ -65,7 +76,7 @@ function App() {
         setOrders(JSON.parse(savedOrders));
       }
     } catch (error) {
-      console.log('Erreur lors du chargement des commandes:', error);
+      console.log('Erreur lors du chargement:', error);
     } finally {
       setLoading(false);
     }
@@ -76,7 +87,6 @@ function App() {
       localStorage.setItem('bs_express_orders', JSON.stringify(newOrders));
     } catch (error) {
       console.error('Erreur lors de la sauvegarde:', error);
-      alert('Erreur lors de la sauvegarde des commandes');
     }
   };
 
