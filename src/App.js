@@ -1,6 +1,17 @@
 import React from 'react';
 import { ShoppingCart, Plus, LogOut, User, Phone, MapPin } from 'lucide-react';
 
+// Simple hash function pour sécuriser les mots de passe
+const hashPassword = (password) => {
+  let hash = 0;
+  for (let i = 0; i < password.length; i++) {
+    const char = password.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return hash.toString(36);
+};
+
 function App() {
   const [currentPage, setCurrentPage] = React.useState('login');
   const [user, setUser] = React.useState(null);
@@ -9,7 +20,9 @@ function App() {
   const [loginPassword, setLoginPassword] = React.useState('');
   const [checkoutName, setCheckoutName] = React.useState('');
   const [checkoutPhone, setCheckoutPhone] = React.useState('');
+  const [checkoutAddress, setCheckoutAddress] = React.useState('');
   const [orders, setOrders] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
 
   const products = [
     { id: 1, name: 'Produit Premium 1', price: 2500, image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600' },
@@ -20,12 +33,51 @@ function App() {
     { id: 6, name: 'Produit Tendance 6', price: 3900, image: 'https://images.unsplash.com/photo-1491637639811-60e2756cc1c7?w=600' }
   ];
 
-  const defaultUser = {
-    username: 'admin',
-    password: 'admin123',
-    name: 'BS EXPRESS Admin',
-    phone: '+213 555 123 456',
-    isAdmin: true
+  // Mots de passe hashés (admin123 et user123)
+  const users = {
+    admin: {
+      username: 'admin',
+      passwordHash: hashPassword('admin123'),
+      name: 'BS EXPRESS Admin',
+      phone: '+213 555 123 456',
+      address: 'Tlemcen Centre',
+      isAdmin: true
+    },
+    user: {
+      username: 'user',
+      passwordHash: hashPassword('user123'),
+      name: 'Client Test',
+      phone: '+213 666 789 012',
+      address: 'Tlemcen, Imama',
+      isAdmin: false
+    }
+  };
+
+  // Charger les commandes au démarrage
+  React.useEffect(() => {
+    loadOrders();
+  }, []);
+
+  const loadOrders = () => {
+    try {
+      const savedOrders = localStorage.getItem('bs_express_orders');
+      if (savedOrders) {
+        setOrders(JSON.parse(savedOrders));
+      }
+    } catch (error) {
+      console.log('Erreur lors du chargement des commandes:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const saveOrders = (newOrders) => {
+    try {
+      localStorage.setItem('bs_express_orders', JSON.stringify(newOrders));
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde:', error);
+      alert('Erreur lors de la sauvegarde des commandes');
+    }
   };
 
   const addToCart = (product) => {
@@ -53,7 +105,7 @@ function App() {
   const getTotalItems = () => cart.reduce((total, item) => total + item.quantity, 0);
 
   const handleCheckout = () => {
-    if (!checkoutName || !checkoutPhone) {
+    if (!checkoutName || !checkoutPhone || !checkoutAddress) {
       alert('Veuillez remplir tous les champs');
       return;
     }
@@ -62,26 +114,48 @@ function App() {
       orderNumber: 'CMD-' + Date.now(),
       clientName: checkoutName,
       clientPhone: checkoutPhone,
+      clientAddress: checkoutAddress,
       items: [...cart],
       total: getTotalPrice(),
       date: new Date().toLocaleDateString('fr-FR'),
       time: new Date().toLocaleTimeString('fr-FR'),
-      status: 'En attente'
+      status: 'En attente',
+      userId: user?.username || 'guest'
     };
-    setOrders([newOrder, ...orders]);
-    alert('Commande confirmée!');
+    const updatedOrders = [newOrder, ...orders];
+    setOrders(updatedOrders);
+    saveOrders(updatedOrders);
+    alert('Commande confirmée! Numéro: ' + newOrder.orderNumber);
     setCart([]);
     setCheckoutName('');
     setCheckoutPhone('');
-    setCurrentPage('shop');
+    setCheckoutAddress('');
+    setCurrentPage('my-orders');
+  };
+
+  const updateOrderStatus = (orderId, newStatus) => {
+    const updatedOrders = orders.map(order =>
+      order.id === orderId ? { ...order, status: newStatus } : order
+    );
+    setOrders(updatedOrders);
+    saveOrders(updatedOrders);
   };
 
   React.useEffect(() => {
     if (currentPage === 'checkout' && user) {
       setCheckoutName(user.name);
       setCheckoutPhone(user.phone);
+      setCheckoutAddress(user.address);
     }
   }, [currentPage, user]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center">
+        <div className="text-white text-2xl font-bold">Chargement...</div>
+      </div>
+    );
+  }
 
   if (currentPage === 'login') {
     return (
@@ -96,36 +170,54 @@ function App() {
               type="text"
               value={loginUsername}
               onChange={(e) => setLoginUsername(e.target.value)}
-              className="w-full px-4 py-3 border-2 rounded-xl outline-none"
-              placeholder="admin"
+              className="w-full px-4 py-3 border-2 rounded-xl outline-none focus:border-indigo-500"
+              placeholder="Nom d'utilisateur"
             />
             <input
               type="password"
               value={loginPassword}
               onChange={(e) => setLoginPassword(e.target.value)}
-              className="w-full px-4 py-3 border-2 rounded-xl outline-none"
-              placeholder="admin123"
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  const foundUser = Object.values(users).find(
+                    u => u.username === loginUsername && u.passwordHash === hashPassword(loginPassword)
+                  );
+                  if (foundUser) {
+                    setUser(foundUser);
+                    setCurrentPage('shop');
+                    setLoginUsername('');
+                    setLoginPassword('');
+                  } else {
+                    alert('Identifiants incorrects');
+                  }
+                }
+              }}
+              className="w-full px-4 py-3 border-2 rounded-xl outline-none focus:border-indigo-500"
+              placeholder="Mot de passe"
             />
             <button
               onClick={() => {
-                if (loginUsername === defaultUser.username && loginPassword === defaultUser.password) {
-                  setUser(defaultUser);
+                const foundUser = Object.values(users).find(
+                  u => u.username === loginUsername && u.passwordHash === hashPassword(loginPassword)
+                );
+                if (foundUser) {
+                  setUser(foundUser);
                   setCurrentPage('shop');
+                  setLoginUsername('');
+                  setLoginPassword('');
+                } else {
+                  alert('Identifiants incorrects');
                 }
               }}
-              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 rounded-xl font-bold"
+              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 rounded-xl font-bold hover:shadow-lg transition"
             >
               Se connecter
             </button>
-            <button
-              onClick={() => {
-                setUser(defaultUser);
-                setCurrentPage('admin');
-              }}
-              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 rounded-xl font-bold"
-            >
-              🔧 Accès Admin
-            </button>
+          </div>
+          <div className="mt-6 p-4 bg-gray-50 rounded-xl text-sm">
+            <p className="font-bold mb-2 text-gray-700">Comptes de test :</p>
+            <p className="text-gray-600">👤 User: <span className="font-mono">user</span> / <span className="font-mono">user123</span></p>
+            <p className="text-gray-600">🔧 Admin: <span className="font-mono">admin</span> / <span className="font-mono">admin123</span></p>
           </div>
         </div>
       </div>
@@ -139,12 +231,24 @@ function App() {
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-black text-indigo-600">BS EXPRESS</h1>
             <div className="flex gap-2">
+              <button 
+                onClick={() => setCurrentPage('my-orders')} 
+                className="px-4 py-2 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition"
+              >
+                📦 Mes Commandes
+              </button>
               {user?.isAdmin && (
-                <button onClick={() => setCurrentPage('admin')} className="px-4 py-2 bg-purple-500 text-white rounded-xl font-semibold">
-                  Admin
+                <button 
+                  onClick={() => setCurrentPage('admin')} 
+                  className="px-4 py-2 bg-purple-500 text-white rounded-xl font-semibold hover:bg-purple-600 transition"
+                >
+                  🔧 Admin
                 </button>
               )}
-              <button onClick={() => { setUser(null); setCurrentPage('login'); }} className="px-4 py-2 bg-red-500 text-white rounded-xl font-semibold">
+              <button 
+                onClick={() => { setUser(null); setCurrentPage('login'); setCart([]) }} 
+                className="px-4 py-2 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 transition"
+              >
                 Déconnexion
               </button>
             </div>
@@ -165,13 +269,13 @@ function App() {
                         <span className="font-semibold">{item.name} x{item.quantity}</span>
                       </div>
                       <div className="flex gap-2">
-                        <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="px-2 bg-gray-200 rounded font-bold">−</button>
-                        <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="px-2 bg-gray-200 rounded font-bold">+</button>
+                        <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="px-2 bg-gray-200 rounded font-bold hover:bg-gray-300">−</button>
+                        <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="px-2 bg-gray-200 rounded font-bold hover:bg-gray-300">+</button>
                       </div>
                     </div>
                   ))}
                 </div>
-                <button onClick={() => setCurrentPage('checkout')} className="w-full bg-green-500 text-white py-2 rounded font-bold">
+                <button onClick={() => setCurrentPage('checkout')} className="w-full bg-green-500 text-white py-2 rounded font-bold hover:bg-green-600 transition">
                   💳 Acheter
                 </button>
               </div>
@@ -180,6 +284,11 @@ function App() {
         </div>
 
         <div className="p-6">
+          <div className="mb-6 bg-indigo-600 text-white p-4 rounded-xl">
+            <p className="font-bold">👋 Bienvenue, {user?.name}!</p>
+            <p className="text-sm text-indigo-200">{user?.isAdmin ? 'Compte Administrateur' : 'Compte Client'}</p>
+          </div>
+          
           <h2 className="text-3xl font-black mb-6">Nos Produits</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {products.map(product => (
@@ -189,7 +298,7 @@ function App() {
                   <h3 className="font-bold text-lg mb-2">{product.name}</h3>
                   <div className="flex justify-between items-center">
                     <p className="text-2xl font-black text-indigo-600">{product.price} DZD</p>
-                    <button className="bg-indigo-600 text-white p-2 rounded-lg">+</button>
+                    <button className="bg-indigo-600 text-white p-2 rounded-lg hover:bg-indigo-700 transition">+</button>
                   </div>
                 </div>
               </div>
@@ -204,18 +313,18 @@ function App() {
     return (
       <div className="min-h-screen bg-gray-50 p-8">
         <div className="max-w-4xl mx-auto bg-white rounded-xl p-8 shadow-lg">
-          <button onClick={() => setCurrentPage('shop')} className="mb-6 text-indigo-600 font-bold">← Retour</button>
+          <button onClick={() => setCurrentPage('shop')} className="mb-6 text-indigo-600 font-bold hover:text-indigo-800">← Retour</button>
           <h1 className="text-3xl font-black mb-6 text-indigo-600">Finaliser la commande</h1>
           <div className="grid md:grid-cols-2 gap-8">
             <div className="space-y-4">
               <div>
-                <label className="block font-bold mb-2">Nom du magasin</label>
+                <label className="block font-bold mb-2">Nom complet / Nom du magasin</label>
                 <input
                   type="text"
                   value={checkoutName}
                   onChange={(e) => setCheckoutName(e.target.value)}
-                  className="w-full px-4 py-3 border-2 rounded-xl"
-                  placeholder="Superette..."
+                  className="w-full px-4 py-3 border-2 rounded-xl focus:border-indigo-500 outline-none"
+                  placeholder="Votre nom..."
                 />
               </div>
               <div>
@@ -224,14 +333,24 @@ function App() {
                   type="tel"
                   value={checkoutPhone}
                   onChange={(e) => setCheckoutPhone(e.target.value)}
-                  className="w-full px-4 py-3 border-2 rounded-xl"
+                  className="w-full px-4 py-3 border-2 rounded-xl focus:border-indigo-500 outline-none"
                   placeholder="+213..."
+                />
+              </div>
+              <div>
+                <label className="block font-bold mb-2">Adresse de livraison</label>
+                <input
+                  type="text"
+                  value={checkoutAddress}
+                  onChange={(e) => setCheckoutAddress(e.target.value)}
+                  className="w-full px-4 py-3 border-2 rounded-xl focus:border-indigo-500 outline-none"
+                  placeholder="Adresse complète..."
                 />
               </div>
               <div className="bg-blue-50 rounded-xl p-4">
                 <p className="font-bold text-blue-800">📍 Zone: Tlemcen</p>
               </div>
-              <button onClick={handleCheckout} className="w-full bg-green-500 text-white py-4 rounded-xl font-bold text-lg">
+              <button onClick={handleCheckout} className="w-full bg-green-500 text-white py-4 rounded-xl font-bold text-lg hover:bg-green-600 transition">
                 ✅ Confirmer la commande
               </button>
             </div>
@@ -256,16 +375,107 @@ function App() {
     );
   }
 
+  if (currentPage === 'my-orders') {
+    const userOrders = user?.isAdmin ? orders : orders.filter(o => o.userId === user?.username);
+    
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow p-4 flex justify-between items-center sticky top-0 z-50">
+          <h1 className="text-2xl font-black text-blue-600">📦 Mes Commandes</h1>
+          <div className="flex gap-2">
+            <button onClick={() => setCurrentPage('shop')} className="px-4 py-2 bg-indigo-500 text-white rounded-xl font-semibold hover:bg-indigo-600">
+              Boutique
+            </button>
+            {user?.isAdmin && (
+              <button onClick={() => setCurrentPage('admin')} className="px-4 py-2 bg-purple-500 text-white rounded-xl font-semibold hover:bg-purple-600">
+                🔧 Admin
+              </button>
+            )}
+            <button onClick={() => { setUser(null); setCurrentPage('login'); }} className="px-4 py-2 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600">
+              Déconnexion
+            </button>
+          </div>
+        </div>
+        
+        <div className="p-8">
+          {userOrders.length === 0 ? (
+            <div className="bg-white rounded-xl p-12 text-center shadow-lg">
+              <div className="text-6xl mb-4">📦</div>
+              <p className="text-gray-500 font-bold text-xl">Aucune commande pour le moment</p>
+              <button 
+                onClick={() => setCurrentPage('shop')} 
+                className="mt-6 px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700"
+              >
+                Commencer vos achats
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {userOrders.map(order => (
+                <div key={order.id} className="bg-white rounded-xl p-6 shadow-lg border-2 border-blue-100">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 className="font-black text-xl">{order.orderNumber}</h3>
+                      <p className="text-sm text-gray-600">{order.date} à {order.time}</p>
+                    </div>
+                    <span className={`px-4 py-2 rounded-full text-sm font-bold ${order.status === 'Traitée' ? 'bg-green-100 text-green-700' : order.status === 'En cours' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'}`}>
+                      {order.status}
+                    </span>
+                  </div>
+                  <div className="bg-blue-50 rounded-xl p-4 mb-4">
+                    <p className="font-bold text-lg">👤 {order.clientName}</p>
+                    <p className="text-sm text-blue-600 font-semibold">📞 {order.clientPhone}</p>
+                    <p className="text-sm text-blue-600">📍 {order.clientAddress}</p>
+                  </div>
+                  <div className="space-y-2 mb-4">
+                    {order.items.map(item => (
+                      <div key={item.id} className="flex justify-between text-sm bg-gray-50 p-2 rounded">
+                        <span>{item.name} x{item.quantity}</span>
+                        <span className="font-bold">{item.price * item.quantity} DZD</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="border-t-2 border-blue-200 mt-4 pt-4 flex justify-between items-center">
+                    <span className="font-black text-lg">Total</span>
+                    <span className="font-black text-2xl text-blue-600">{order.total} DZD</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   if (currentPage === 'admin') {
+    if (!user?.isAdmin) {
+      return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="bg-white rounded-xl p-12 shadow-lg text-center">
+            <div className="text-6xl mb-4">🚫</div>
+            <h2 className="text-2xl font-black mb-4">Accès refusé</h2>
+            <p className="text-gray-600 mb-6">Vous n'avez pas les permissions d'accéder à cette page.</p>
+            <button 
+              onClick={() => setCurrentPage('shop')} 
+              className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700"
+            >
+              Retour à la boutique
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow p-4 flex justify-between items-center sticky top-0 z-50">
           <h1 className="text-2xl font-black text-purple-600">🔧 Panel Admin</h1>
           <div className="flex gap-2">
-            <button onClick={() => setCurrentPage('shop')} className="px-4 py-2 bg-indigo-500 text-white rounded-xl font-semibold">
+            <button onClick={() => setCurrentPage('shop')} className="px-4 py-2 bg-indigo-500 text-white rounded-xl font-semibold hover:bg-indigo-600">
               Boutique
             </button>
-            <button onClick={() => { setUser(null); setCurrentPage('login'); }} className="px-4 py-2 bg-red-500 text-white rounded-xl font-semibold">
+            <button onClick={() => { setUser(null); setCurrentPage('login'); }} className="px-4 py-2 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600">
               Déconnexion
             </button>
           </div>
@@ -286,7 +496,7 @@ function App() {
             </div>
           </div>
           
-          <h2 className="text-3xl font-black mb-6">📦 Commandes</h2>
+          <h2 className="text-3xl font-black mb-6">📦 Toutes les Commandes</h2>
           {orders.length === 0 ? (
             <div className="bg-white rounded-xl p-12 text-center shadow-lg">
               <div className="text-6xl mb-4">📦</div>
@@ -301,13 +511,24 @@ function App() {
                       <h3 className="font-black text-xl">{order.orderNumber}</h3>
                       <p className="text-sm text-gray-600">{order.date} à {order.time}</p>
                     </div>
-                    <span className={`px-4 py-2 rounded-full text-sm font-bold ${order.status === 'Traitée' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
-                      {order.status}
-                    </span>
+                    <select
+                      value={order.status}
+                      onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+                      className={`px-4 py-2 rounded-full text-sm font-bold border-2 outline-none cursor-pointer ${
+                        order.status === 'Traitée' ? 'bg-green-100 text-green-700 border-green-300' : 
+                        order.status === 'En cours' ? 'bg-blue-100 text-blue-700 border-blue-300' : 
+                        'bg-orange-100 text-orange-700 border-orange-300'
+                      }`}
+                    >
+                      <option value="En attente">En attente</option>
+                      <option value="En cours">En cours</option>
+                      <option value="Traitée">Traitée</option>
+                    </select>
                   </div>
                   <div className="bg-purple-50 rounded-xl p-4 mb-4">
                     <p className="font-bold text-lg">👤 {order.clientName}</p>
                     <p className="text-sm text-purple-600 font-semibold">📞 {order.clientPhone}</p>
+                    <p className="text-sm text-purple-600">📍 {order.clientAddress}</p>
                   </div>
                   <div className="space-y-2 mb-4">
                     {order.items.map(item => (
