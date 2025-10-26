@@ -1,7 +1,7 @@
 import React from 'react';
-import { ShoppingCart, Plus, LogOut, User, Phone, MapPin } from 'lucide-react';
+import { ShoppingCart, Plus, LogOut, User, Phone, MapPin, Edit2, Trash2, X } from 'lucide-react';
 import { db } from "./firebase";
-import { collection, addDoc, getDocs, doc, updateDoc } from "firebase/firestore";
+import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from "firebase/firestore";
 
 const hashPassword = (password) => {
   let hash = 0;
@@ -32,15 +32,6 @@ const users = {
   }
 };
 
-const products = [
-  { id: 1, name: 'Produit Premium 1', price: 2500, image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600' },
-  { id: 2, name: 'Produit Exclusif 2', price: 3200, image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600' },
-  { id: 3, name: 'Article de Luxe 3', price: 4100, image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=600' },
-  { id: 4, name: 'Collection Spéciale 4', price: 2800, image: 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=600' },
-  { id: 5, name: 'Édition Limitée 5', price: 5500, image: 'https://images.unsplash.com/photo-1560343090-f0409e92791a?w=600' },
-  { id: 6, name: 'Produit Tendance 6', price: 3900, image: 'https://images.unsplash.com/photo-1491637639811-60e2756cc1c7?w=600' }
-];
-
 function App() {
   const [currentPage, setCurrentPage] = React.useState('login');
   const [user, setUser] = React.useState(null);
@@ -51,26 +42,126 @@ function App() {
   const [checkoutPhone, setCheckoutPhone] = React.useState('');
   const [checkoutAddress, setCheckoutAddress] = React.useState('');
   const [orders, setOrders] = React.useState([]);
+  const [products, setProducts] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
+  
+  const [showProductModal, setShowProductModal] = React.useState(false);
+  const [editingProduct, setEditingProduct] = React.useState(null);
+  const [productForm, setProductForm] = React.useState({
+    name: '',
+    price: '',
+    image: ''
+  });
+  const [showCompletedOrders, setShowCompletedOrders] = React.useState(false);
 
   const loadOrders = React.useCallback(async () => {
-    setLoading(true);
     try {
       const snapshot = await getDocs(collection(db, "orders"));
-      console.log(`✅ Connexion Firebase OK. ${snapshot.size} commandes trouvées.`);
-      
+      console.log(`✅ ${snapshot.size} commandes trouvées.`);
       const firebaseOrders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setOrders(firebaseOrders.reverse());
     } catch (error) {
-      console.error('❌ ERREUR CRITIQUE DE CONNEXION FIREBASE/CHARGEMENT:', error);
-    } finally {
-      setLoading(false);
+      console.error('❌ Erreur chargement commandes:', error);
+    }
+  }, []);
+
+  const loadProducts = React.useCallback(async () => {
+    try {
+      console.log('🔍 Tentative de chargement des produits...');
+      const snapshot = await getDocs(collection(db, "products"));
+      console.log(`✅ ${snapshot.size} produits trouvés.`);
+      const firebaseProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setProducts(firebaseProducts);
+    } catch (error) {
+      console.error('❌ Erreur chargement produits:', error);
+      console.error('Code:', error.code);
+      console.error('Message:', error.message);
+      // Si erreur de permissions, on continue sans bloquer l'app
+      setProducts([]);
     }
   }, []);
 
   React.useEffect(() => {
-    loadOrders();
-  }, [loadOrders]);
+    const loadData = async () => {
+      setLoading(true);
+      await Promise.all([loadOrders(), loadProducts()]);
+      setLoading(false);
+    };
+    loadData();
+  }, [loadOrders, loadProducts]);
+
+  const openProductModal = (product = null) => {
+    if (product) {
+      setEditingProduct(product);
+      setProductForm({
+        name: product.name,
+        price: product.price.toString(),
+        image: product.image
+      });
+    } else {
+      setEditingProduct(null);
+      setProductForm({ name: '', price: '', image: '' });
+    }
+    setShowProductModal(true);
+  };
+
+  const closeProductModal = () => {
+    setShowProductModal(false);
+    setEditingProduct(null);
+    setProductForm({ name: '', price: '', image: '' });
+  };
+
+  const handleSaveProduct = async () => {
+    if (!productForm.name || !productForm.price || !productForm.image) {
+      alert('Veuillez remplir tous les champs');
+      return;
+    }
+
+    const productData = {
+      name: productForm.name,
+      price: parseFloat(productForm.price),
+      image: productForm.image
+    };
+
+    console.log('💾 Tentative de sauvegarde produit:', productData);
+
+    try {
+      if (editingProduct) {
+        console.log('📝 Modification du produit:', editingProduct.id);
+        await updateDoc(doc(db, "products", editingProduct.id), productData);
+        console.log('✅ Produit modifié');
+        alert('Produit modifié avec succès !');
+      } else {
+        console.log('➕ Ajout nouveau produit');
+        const docRef = await addDoc(collection(db, "products"), productData);
+        console.log('✅ Produit ajouté avec ID:', docRef.id);
+        alert('Produit ajouté avec succès !');
+      }
+      await loadProducts();
+      closeProductModal();
+    } catch (error) {
+      console.error('❌ Erreur sauvegarde produit:', error);
+      console.error('Code erreur:', error.code);
+      console.error('Message:', error.message);
+      alert('Erreur: ' + error.message + '\n\nVérifiez les règles Firestore dans la console.');
+    }
+  };
+
+  const handleDeleteProduct = async (productId) => {
+    if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) {
+      return;
+    }
+
+    try {
+      await deleteDoc(doc(db, "products", productId));
+      console.log('✅ Produit supprimé');
+      alert('Produit supprimé avec succès !');
+      await loadProducts();
+    } catch (error) {
+      console.error('❌ Erreur suppression produit:', error);
+      alert('Erreur: ' + error.message);
+    }
+  };
 
   const addToCart = (product) => {
     const existing = cart.find(item => item.id === product.id);
@@ -102,7 +193,6 @@ function App() {
       return;
     }
 
-    // Nettoyer les items pour Firebase (supprimer toute fonction ou données complexes)
     const cleanItems = cart.map(item => ({
       id: item.id,
       name: item.name,
@@ -143,7 +233,6 @@ function App() {
   const updateOrderStatus = async (orderId, newStatus) => {
     console.log('🔄 Tentative de mise à jour:', { orderId, newStatus, type: typeof orderId });
     
-    // Vérifier que orderId est bien une chaîne
     if (!orderId || typeof orderId !== 'string') {
       console.error('❌ ID invalide:', orderId);
       alert('Erreur: ID de commande invalide');
@@ -317,20 +406,27 @@ function App() {
           </div>
           
           <h2 className="text-3xl font-black mb-6">Nos Produits</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {products.map(product => (
-              <div key={product.id} className="bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer hover:shadow-2xl transition" onClick={() => addToCart(product)}>
-                <img src={product.image} alt={product.name} className="w-full h-64 object-cover" />
-                <div className="p-5">
-                  <h3 className="font-bold text-lg mb-2">{product.name}</h3>
-                  <div className="flex justify-between items-center">
-                    <p className="text-2xl font-black text-indigo-600">{product.price} DZD</p>
-                    <button className="bg-indigo-600 text-white p-2 rounded-lg hover:bg-indigo-700 transition">+</button>
+          {products.length === 0 ? (
+            <div className="bg-white rounded-xl p-12 text-center shadow-lg">
+              <div className="text-6xl mb-4">📦</div>
+              <p className="text-gray-500 font-bold text-xl">Aucun produit disponible</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {products.map(product => (
+                <div key={product.id} className="bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer hover:shadow-2xl transition" onClick={() => addToCart(product)}>
+                  <img src={product.image} alt={product.name} className="w-full h-64 object-cover" />
+                  <div className="p-5">
+                    <h3 className="font-bold text-lg mb-2">{product.name}</h3>
+                    <div className="flex justify-between items-center">
+                      <p className="text-2xl font-black text-indigo-600">{product.price} DZD</p>
+                      <button className="bg-indigo-600 text-white p-2 rounded-lg hover:bg-indigo-700 transition">+</button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -349,10 +445,12 @@ function App() {
                 <input
                   type="text"
                   value={checkoutName}
-                  onChange={(e) => setCheckoutName(e.target.value)}
-                  className="w-full px-4 py-3 border-2 rounded-xl focus:border-indigo-500 outline-none"
+                  readOnly
+                  disabled
+                  className="w-full px-4 py-3 border-2 rounded-xl bg-gray-100 text-gray-600 cursor-not-allowed outline-none"
                   placeholder="Votre nom..."
                 />
+                <p className="text-xs text-gray-500 mt-1">Le nom ne peut pas être modifié</p>
               </div>
               <div>
                 <label className="block font-bold mb-2">Téléphone</label>
@@ -507,15 +605,32 @@ function App() {
             </button>
           </div>
         </div>
+        
         <div className="p-8">
+          <div className="flex gap-4 mb-8">
+            <button className="px-6 py-3 bg-purple-600 text-white rounded-xl font-bold">
+              📦 Commandes
+            </button>
+            <button 
+              onClick={() => setCurrentPage('admin-products')} 
+              className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-300"
+            >
+              🛍️ Produits
+            </button>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl p-6 shadow-lg">
               <p className="text-sm mb-2 text-blue-100">Total Commandes</p>
               <p className="text-5xl font-black">{orders.length}</p>
             </div>
-            <div className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl p-6 shadow-lg">
+            <div 
+              onClick={() => setShowCompletedOrders(true)}
+              className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl p-6 shadow-lg cursor-pointer hover:shadow-2xl transition transform hover:scale-105"
+            >
               <p className="text-sm mb-2 text-green-100">Traitées</p>
               <p className="text-5xl font-black">{orders.filter(o => o.status === 'Traitée').length}</p>
+              <p className="text-xs mt-2 text-green-100">Cliquez pour voir →</p>
             </div>
             <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl p-6 shadow-lg">
               <p className="text-sm mb-2 text-orange-100">En attente</p>
@@ -523,15 +638,30 @@ function App() {
             </div>
           </div>
           
-          <h2 className="text-3xl font-black mb-6">📦 Toutes les Commandes</h2>
-          {orders.length === 0 ? (
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-3xl font-black">
+              {showCompletedOrders ? '✅ Commandes Traitées' : '📦 Commandes En Cours'}
+            </h2>
+            {showCompletedOrders && (
+              <button 
+                onClick={() => setShowCompletedOrders(false)}
+                className="px-6 py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 transition"
+              >
+                ← Retour aux commandes en cours
+              </button>
+            )}
+          </div>
+
+          {orders.filter(o => showCompletedOrders ? o.status === 'Traitée' : o.status !== 'Traitée').length === 0 ? (
             <div className="bg-white rounded-xl p-12 text-center shadow-lg">
               <div className="text-6xl mb-4">📦</div>
-              <p className="text-gray-500 font-bold text-xl">Aucune commande pour le moment</p>
+              <p className="text-gray-500 font-bold text-xl">
+                {showCompletedOrders ? 'Aucune commande traitée' : 'Aucune commande en cours'}
+              </p>
             </div>
           ) : (
             <div className="space-y-4">
-              {orders.map(order => (
+              {orders.filter(o => showCompletedOrders ? o.status === 'Traitée' : o.status !== 'Traitée').map(order => (
                 <div key={order.id} className="bg-white rounded-xl p-6 shadow-lg border-2 border-purple-100">
                   <div className="flex justify-between items-start mb-4">
                     <div>
@@ -568,6 +698,182 @@ function App() {
                   <div className="border-t-2 border-purple-200 mt-4 pt-4 flex justify-between items-center">
                     <span className="font-black text-lg">Total</span>
                     <span className="font-black text-2xl text-purple-600">{order.total} DZD</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (currentPage === 'admin-products') {
+    if (!user?.isAdmin) {
+      return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="bg-white rounded-xl p-12 shadow-lg text-center">
+            <div className="text-6xl mb-4">🚫</div>
+            <h2 className="text-2xl font-black mb-4">Accès refusé</h2>
+            <p className="text-gray-600 mb-6">Vous n'avez pas les permissions d'accéder à cette page.</p>
+            <button 
+              onClick={() => setCurrentPage('shop')} 
+              className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700"
+            >
+              Retour à la boutique
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {showProductModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl p-8 max-w-lg w-full shadow-2xl">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-black text-purple-600">
+                  {editingProduct ? '✏️ Modifier le produit' : '➕ Ajouter un produit'}
+                </h2>
+                <button onClick={closeProductModal} className="text-gray-500 hover:text-gray-700">
+                  <X size={24} />
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block font-bold mb-2">Nom du produit</label>
+                  <input
+                    type="text"
+                    value={productForm.name}
+                    onChange={(e) => setProductForm({...productForm, name: e.target.value})}
+                    className="w-full px-4 py-3 border-2 rounded-xl focus:border-purple-500 outline-none"
+                    placeholder="Ex: Montre élégante"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block font-bold mb-2">Prix (DZD)</label>
+                  <input
+                    type="number"
+                    value={productForm.price}
+                    onChange={(e) => setProductForm({...productForm, price: e.target.value})}
+                    className="w-full px-4 py-3 border-2 rounded-xl focus:border-purple-500 outline-none"
+                    placeholder="Ex: 2500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block font-bold mb-2">URL de l'image</label>
+                  <input
+                    type="url"
+                    value={productForm.image}
+                    onChange={(e) => setProductForm({...productForm, image: e.target.value})}
+                    className="w-full px-4 py-3 border-2 rounded-xl focus:border-purple-500 outline-none"
+                    placeholder="https://exemple.com/image.jpg"
+                  />
+                  {productForm.image && (
+                    <img 
+                      src={productForm.image} 
+                      alt="Aperçu" 
+                      className="mt-3 w-full h-48 object-cover rounded-xl"
+                      onError={(e) => e.target.style.display = 'none'}
+                    />
+                  )}
+                </div>
+                
+                <div className="flex gap-3 mt-6">
+                  <button
+                    onClick={handleSaveProduct}
+                    className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl font-bold hover:shadow-lg transition"
+                  >
+                    {editingProduct ? '💾 Enregistrer' : '➕ Ajouter'}
+                  </button>
+                  <button
+                    onClick={closeProductModal}
+                    className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-300 transition"
+                  >
+                    Annuler
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="bg-white shadow p-4 flex justify-between items-center sticky top-0 z-40">
+          <h1 className="text-2xl font-black text-purple-600">🛍️ Gestion des Produits</h1>
+          <div className="flex gap-2">
+            <button onClick={() => setCurrentPage('shop')} className="px-4 py-2 bg-indigo-500 text-white rounded-xl font-semibold hover:bg-indigo-600">
+              Boutique
+            </button>
+            <button onClick={() => { setUser(null); setCurrentPage('login'); }} className="px-4 py-2 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600">
+              Déconnexion
+            </button>
+          </div>
+        </div>
+        
+        <div className="p-8">
+          <div className="flex gap-4 mb-8">
+            <button 
+              onClick={() => setCurrentPage('admin')} 
+              className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-300"
+            >
+              📦 Commandes
+            </button>
+            <button className="px-6 py-3 bg-purple-600 text-white rounded-xl font-bold">
+              🛍️ Produits
+            </button>
+          </div>
+
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-3xl font-black">📦 Catalogue ({products.length})</h2>
+            <button 
+              onClick={() => openProductModal()}
+              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-bold hover:shadow-lg transition"
+            >
+              <Plus size={20} />
+              Ajouter un produit
+            </button>
+          </div>
+
+          {products.length === 0 ? (
+            <div className="bg-white rounded-xl p-12 text-center shadow-lg">
+              <div className="text-6xl mb-4">📦</div>
+              <p className="text-gray-500 font-bold text-xl mb-4">Aucun produit dans le catalogue</p>
+              <button 
+                onClick={() => openProductModal()}
+                className="px-6 py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700"
+              >
+                Ajouter votre premier produit
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {products.map(product => (
+                <div key={product.id} className="bg-white rounded-xl shadow-lg overflow-hidden border-2 border-purple-100">
+                  <img src={product.image} alt={product.name} className="w-full h-48 object-cover" />
+                  <div className="p-5">
+                    <h3 className="font-bold text-lg mb-2">{product.name}</h3>
+                    <p className="text-2xl font-black text-purple-600 mb-4">{product.price} DZD</p>
+                    
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => openProductModal(product)}
+                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition"
+                      >
+                        <Edit2 size={16} />
+                        Modifier
+                      </button>
+                      <button
+                        onClick={() => handleDeleteProduct(product.id)}
+                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition"
+                      >
+                        <Trash2 size={16} />
+                        Supprimer
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
