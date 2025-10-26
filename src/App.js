@@ -3,7 +3,6 @@ import { ShoppingCart, Plus, LogOut, User, Phone, MapPin } from 'lucide-react';
 import { db } from "./firebase";
 import { collection, addDoc, getDocs, doc, updateDoc } from "firebase/firestore";
 
-// Simple hash function pour sécuriser les mots de passe
 const hashPassword = (password) => {
   let hash = 0;
   for (let i = 0; i < password.length; i++) {
@@ -13,6 +12,34 @@ const hashPassword = (password) => {
   }
   return hash.toString(36);
 };
+
+const users = {
+  admin: {
+    username: 'admin',
+    passwordHash: hashPassword('admin123'),
+    name: 'BS EXPRESS Admin',
+    phone: '+213 555 123 456',
+    address: 'Tlemcen Centre',
+    isAdmin: true
+  },
+  user: {
+    username: 'user',
+    passwordHash: hashPassword('user123'),
+    name: 'Client Test',
+    phone: '+213 666 789 012',
+    address: 'Tlemcen, Imama',
+    isAdmin: false
+  }
+};
+
+const products = [
+  { id: 1, name: 'Produit Premium 1', price: 2500, image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600' },
+  { id: 2, name: 'Produit Exclusif 2', price: 3200, image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600' },
+  { id: 3, name: 'Article de Luxe 3', price: 4100, image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=600' },
+  { id: 4, name: 'Collection Spéciale 4', price: 2800, image: 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=600' },
+  { id: 5, name: 'Édition Limitée 5', price: 5500, image: 'https://images.unsplash.com/photo-1560343090-f0409e92791a?w=600' },
+  { id: 6, name: 'Produit Tendance 6', price: 3900, image: 'https://images.unsplash.com/photo-1491637639811-60e2756cc1c7?w=600' }
+];
 
 function App() {
   const [currentPage, setCurrentPage] = React.useState('login');
@@ -26,61 +53,24 @@ function App() {
   const [orders, setOrders] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
 
-  const products = [
-    { id: 1, name: 'Produit Premium 1', price: 2500, image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600' },
-    { id: 2, name: 'Produit Exclusif 2', price: 3200, image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600' },
-    { id: 3, name: 'Article de Luxe 3', price: 4100, image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=600' },
-    { id: 4, name: 'Collection Spéciale 4', price: 2800, image: 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=600' },
-    { id: 5, name: 'Édition Limitée 5', price: 5500, image: 'https://images.unsplash.com/photo-1560343090-f0409e92791a?w=600' },
-    { id: 6, name: 'Produit Tendance 6', price: 3900, image: 'https://images.unsplash.com/photo-1491637639811-60e2756cc1c7?w=600' }
-  ];
-
-async function testFirebase() {
-  const querySnapshot = await getDocs(collection(db, "orders"));
-  querySnapshot.forEach((doc) => {
-    console.log(doc.id, " => ", doc.data());
-  });
-}
-
-testFirebase();
-
-  // Mots de passe hashés
-  const users = {
-    admin: {
-      username: 'admin',
-      passwordHash: hashPassword('admin123'),
-      name: 'BS EXPRESS Admin',
-      phone: '+213 555 123 456',
-      address: 'Tlemcen Centre',
-      isAdmin: true
-    },
-    user: {
-      username: 'user',
-      passwordHash: hashPassword('user123'),
-      name: 'Client Test',
-      phone: '+213 666 789 012',
-      address: 'Tlemcen, Imama',
-      isAdmin: false
+  const loadOrders = React.useCallback(async () => {
+    setLoading(true);
+    try {
+      const snapshot = await getDocs(collection(db, "orders"));
+      console.log(`✅ Connexion Firebase OK. ${snapshot.size} commandes trouvées.`);
+      
+      const firebaseOrders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setOrders(firebaseOrders.reverse());
+    } catch (error) {
+      console.error('❌ ERREUR CRITIQUE DE CONNEXION FIREBASE/CHARGEMENT:', error);
+    } finally {
+      setLoading(false);
     }
-  };
-
-  // Charger les commandes
-  React.useEffect(() => {
-    loadOrders();
   }, []);
 
-const loadOrders = async () => {
-  setLoading(true);
-  try {
-    const snapshot = await getDocs(collection(db, "orders"));
-    const firebaseOrders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    setOrders(firebaseOrders.reverse());
-  } catch (error) {
-    console.error('Erreur Firebase:', error);
-  } finally {
-    setLoading(false);
-  }
-};
+  React.useEffect(() => {
+    loadOrders();
+  }, [loadOrders]);
 
   const addToCart = (product) => {
     const existing = cart.find(item => item.id === product.id);
@@ -106,54 +96,77 @@ const loadOrders = async () => {
   const getTotalPrice = () => cart.reduce((total, item) => total + (item.price * item.quantity), 0);
   const getTotalItems = () => cart.reduce((total, item) => total + item.quantity, 0);
 
- const handleCheckout = async () => {
-  if (!checkoutName || !checkoutPhone || !checkoutAddress) {
-    alert('Veuillez remplir tous les champs');
-    return;
-  }
+  const handleCheckout = async () => {
+    if (!checkoutName || !checkoutPhone || !checkoutAddress) {
+      alert('Veuillez remplir tous les champs');
+      return;
+    }
 
-  const newOrder = {
-    id: Date.now(),
-    orderNumber: 'CMD-' + Date.now(),
-    clientName: checkoutName,
-    clientPhone: checkoutPhone,
-    clientAddress: checkoutAddress,
-    items: [...cart],
-    total: getTotalPrice(),
-    date: new Date().toLocaleDateString('fr-FR'),
-    time: new Date().toLocaleTimeString('fr-FR'),
-    status: 'En attente',
-    userId: user?.username || 'guest'
+    // Nettoyer les items pour Firebase (supprimer toute fonction ou données complexes)
+    const cleanItems = cart.map(item => ({
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      quantity: item.quantity,
+      image: item.image
+    }));
+
+    const newOrder = {
+      orderNumber: 'CMD-' + Date.now(),
+      clientName: checkoutName,
+      clientPhone: checkoutPhone,
+      clientAddress: checkoutAddress,
+      items: cleanItems,
+      total: getTotalPrice(),
+      date: new Date().toLocaleDateString('fr-FR'),
+      time: new Date().toLocaleTimeString('fr-FR'),
+      status: 'En attente',
+      userId: user?.username || 'guest'
+    };
+
+    try {
+      const docRef = await addDoc(collection(db, "orders"), newOrder);
+      console.log('✅ Commande créée avec ID:', docRef.id);
+      alert('Commande confirmée! Numéro: ' + newOrder.orderNumber);
+      setCart([]);
+      setCheckoutName('');
+      setCheckoutPhone('');
+      setCheckoutAddress('');
+      setCurrentPage('my-orders');
+      await loadOrders(); 
+    } catch (error) {
+      console.error('❌ Erreur lors de la sauvegarde Firebase:', error);
+      alert('Erreur lors de la commande: ' + error.message);
+    }
   };
 
-  try {
-    await addDoc(collection(db, "orders"), newOrder);
-    alert('Commande confirmée! Numéro: ' + newOrder.orderNumber);
-    setCart([]);
-    setCheckoutName('');
-    setCheckoutPhone('');
-    setCheckoutAddress('');
-    setCurrentPage('my-orders');
-  } catch (error) {
-    console.error('Erreur lors de la sauvegarde Firebase:', error);
-    alert('Erreur lors de la commande.');
-  }
-};
-
   const updateOrderStatus = async (orderId, newStatus) => {
-  const updatedOrders = orders.map(order =>
-    order.id === orderId ? { ...order, status: newStatus } : order
-  );
-  setOrders(updatedOrders);
+    console.log('🔄 Tentative de mise à jour:', { orderId, newStatus, type: typeof orderId });
+    
+    // Vérifier que orderId est bien une chaîne
+    if (!orderId || typeof orderId !== 'string') {
+      console.error('❌ ID invalide:', orderId);
+      alert('Erreur: ID de commande invalide');
+      return;
+    }
 
-  try {
-    const orderRef = doc(db, "orders", orderId);
-    await updateDoc(orderRef, { status: newStatus });
-  } catch (error) {
-    console.error("Erreur de mise à jour Firebase:", error);
-  }
-};
+    const updatedOrders = orders.map(order =>
+      order.id === orderId ? { ...order, status: newStatus } : order
+    );
+    setOrders(updatedOrders);
 
+    try {
+      const orderRef = doc(db, "orders", orderId);
+      await updateDoc(orderRef, { status: newStatus });
+      console.log('✅ Statut mis à jour avec succès:', orderId, '->', newStatus);
+    } catch (error) {
+      console.error("❌ Erreur de mise à jour Firebase:", error);
+      console.error("Details:", error.message);
+      console.error("Code d'erreur:", error.code);
+      alert('Erreur lors de la mise à jour: ' + error.message);
+      await loadOrders(); 
+    }
+  };
 
   React.useEffect(() => {
     if (currentPage === 'checkout' && user) {
