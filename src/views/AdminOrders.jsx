@@ -8,6 +8,7 @@ export default function AdminOrders({
   setCurrentPage,
   updateOrderStatus,
 }) {
+  const [showPendingOnly, setShowPendingOnly] = React.useState(false);
   if (!user?.isAdmin) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -61,7 +62,7 @@ export default function AdminOrders({
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div 
-            onClick={() => setShowCompletedOrders(false)}
+            onClick={() => { setShowCompletedOrders(false); setShowPendingOnly(false); }}
             className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl p-6 shadow-lg cursor-pointer hover:shadow-2xl transition transform hover:scale-105"
           >
             <p className="text-sm mb-2 text-blue-100">En cours</p>
@@ -69,35 +70,47 @@ export default function AdminOrders({
             <p className="text-xs mt-2 text-blue-100">Cliquez pour voir →</p>
           </div>
           <div 
-            onClick={() => setShowCompletedOrders(true)}
+            onClick={() => { setShowPendingOnly(true); setShowCompletedOrders(false); }}
+            className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl p-6 shadow-lg cursor-pointer hover:shadow-2xl transition transform hover:scale-105"
+          >
+            <p className="text-sm mb-2 text-orange-100">En attente</p>
+            <p className="text-5xl font-black">{orders.filter(o => o.status === 'En attente').length}</p>
+            <p className="text-xs mt-2 text-orange-100">Cliquez pour voir →</p>
+          </div>
+          <div 
+            onClick={() => { setShowCompletedOrders(true); setShowPendingOnly(false); }}
             className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl p-6 shadow-lg cursor-pointer hover:shadow-2xl transition transform hover:scale-105"
           >
             <p className="text-sm mb-2 text-green-100">Traitées</p>
             <p className="text-5xl font-black">{orders.filter(o => o.status === 'Traitée').length}</p>
             <p className="text-xs mt-2 text-green-100">Cliquez pour voir →</p>
           </div>
-          <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl p-6 shadow-lg">
-            <p className="text-sm mb-2 text-orange-100">En attente</p>
-            <p className="text-5xl font-black">{orders.filter(o => o.status === 'En attente').length}</p>
-          </div>
         </div>
         
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-3xl font-black">
-            {showCompletedOrders ? '✅ Commandes Traitées' : '📦 Commandes En Cours'}
+            {showPendingOnly ? '⏳ Commandes En Attente' : showCompletedOrders ? '✅ Commandes Traitées' : '📦 Commandes En Cours'}
           </h2>
         </div>
 
-        {orders.filter(o => showCompletedOrders ? o.status === 'Traitée' : o.status !== 'Traitée').length === 0 ? (
+        {orders.filter(o => {
+          if (showPendingOnly) return o.status === 'En attente';
+          if (showCompletedOrders) return o.status === 'Traitée';
+          return o.status !== 'Traitée';
+        }).length === 0 ? (
           <div className="bg-white rounded-xl p-12 text-center shadow-lg">
             <div className="text-6xl mb-4">📦</div>
             <p className="text-gray-500 font-bold text-xl">
-              {showCompletedOrders ? 'Aucune commande traitée' : 'Aucune commande en cours'}
+              {showPendingOnly ? 'Aucune commande en attente' : showCompletedOrders ? 'Aucune commande traitée' : 'Aucune commande en cours'}
             </p>
           </div>
         ) : (
           <div className="space-y-4">
-            {orders.filter(o => showCompletedOrders ? o.status === 'Traitée' : o.status !== 'Traitée').map(order => (
+            {orders.filter(o => {
+              if (showPendingOnly) return o.status === 'En attente';
+              if (showCompletedOrders) return o.status === 'Traitée';
+              return o.status !== 'Traitée';
+            }).map(order => (
               <div key={order.id} className="bg-white rounded-xl p-6 shadow-lg border-2 border-purple-100">
                 <div className="flex justify-between items-start mb-4">
                   <div>

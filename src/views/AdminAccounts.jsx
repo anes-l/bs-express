@@ -125,42 +125,42 @@ export default function AdminAccounts({
         </div>
       )}
 
-      <div className="bg-white shadow p-4 flex justify-between items-center sticky top-0 z-40">
-        <h1 className="text-2xl font-black text-purple-600">👥 Gestion des Comptes</h1>
-        <div className="flex gap-2">
-          <button onClick={() => setCurrentPage('shop')} className="px-4 py-2 bg-indigo-500 text-white rounded-xl font-semibold hover:bg-indigo-600">
+      <div className="bg-white shadow p-4 flex flex-col sm:flex-row justify-between items-center gap-3 sticky top-0 z-50">
+        <h1 className="text-xl sm:text-2xl font-black text-purple-600">👥 Gestion des Comptes</h1>
+        <div className="flex flex-wrap gap-2 justify-center">
+          <button onClick={() => setCurrentPage('shop')} className="px-3 sm:px-4 py-2 bg-indigo-500 text-white rounded-xl text-sm sm:text-base font-semibold hover:bg-indigo-600 whitespace-nowrap">
             Boutique
           </button>
-          <button onClick={() => { setCurrentPage('login'); }} className="px-4 py-2 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600">
+          <button onClick={() => { setCurrentPage('login'); }} className="px-3 sm:px-4 py-2 bg-red-500 text-white rounded-xl text-sm sm:text-base font-semibold hover:bg-red-600 whitespace-nowrap">
             Déconnexion
           </button>
         </div>
       </div>
       
-      <div className="p-8">
-        <div className="flex gap-4 mb-8">
+      <div className="p-4 sm:p-8">
+        <div className="flex flex-wrap gap-2 sm:gap-4 mb-6 sm:mb-8 justify-center sm:justify-start">
           <button 
             onClick={() => setCurrentPage('admin')} 
-            className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-300"
+            className="px-4 sm:px-6 py-3 bg-gray-200 text-gray-700 rounded-xl text-sm sm:text-base font-bold hover:bg-gray-300 whitespace-nowrap"
           >
             📦 Commandes
           </button>
           <button 
             onClick={() => setCurrentPage('admin-products')} 
-            className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-300"
+            className="px-4 sm:px-6 py-3 bg-gray-200 text-gray-700 rounded-xl text-sm sm:text-base font-bold hover:bg-gray-300 whitespace-nowrap"
           >
             🛍️ Produits
           </button>
-          <button className="px-6 py-3 bg-purple-600 text-white rounded-xl font-bold">
-            👥 Comptes Clients
+          <button className="px-4 sm:px-6 py-3 bg-purple-600 text-white rounded-xl text-sm sm:text-base font-bold whitespace-nowrap">
+            👥 Comptes
           </button>
         </div>
 
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-3xl font-black">👥 Comptes Clients ({accounts.length})</h2>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-6">
+          <h2 className="text-2xl sm:text-3xl font-black">👥 Comptes ({accounts.length})</h2>
           <button 
             onClick={() => openAccountModal()}
-            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-bold hover:shadow-lg transition"
+            className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl text-sm sm:text-base font-bold hover:shadow-lg transition whitespace-nowrap w-full sm:w-auto justify-center sm:justify-start"
           >
             <Plus size={20} />
             Créer un compte

@@ -1,11 +1,13 @@
 import React from 'react';
-import { ShoppingCart, Plus, LogOut, User, Phone, MapPin, Edit2, Trash2, X, Users } from 'lucide-react';
+import { ShoppingCart, Plus, LogOut, User, Phone, MapPin, Edit2, Trash2, X, Users, FileText } from 'lucide-react';
 import Toasts from './components/Toasts';
 import AdminOrders from './views/AdminOrders';
 import AdminProducts from './views/AdminProducts';
 import AdminAccounts from './views/AdminAccounts';
 import { db } from "./firebase";
 import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from "firebase/firestore";
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const hashPassword = (password) => {
   let hash = 0;
@@ -17,24 +19,6 @@ const hashPassword = (password) => {
   return hash.toString(36);
 };
 
-const users = {
-  admin: {
-    username: 'admin',
-    passwordHash: hashPassword('admin123'),
-    name: 'BS EXPRESS Admin',
-    phone: '+213 555 123 456',
-    address: 'Tlemcen Centre',
-    isAdmin: true
-  },
-  user: {
-    username: 'user',
-    passwordHash: hashPassword('user123'),
-    name: 'Client Test',
-    phone: '+213 666 789 012',
-    address: 'Tlemcen, Imama',
-    isAdmin: false
-  }
-};
 
 function App() {
   const [currentPage, setCurrentPage] = React.useState('login');
@@ -321,6 +305,71 @@ function App() {
   const getTotalPrice = () => cart.reduce((total, item) => total + (item.price * item.quantity), 0);
   const getTotalItems = () => cart.reduce((total, item) => total + item.quantity, 0);
 
+  const generateInvoice = () => {
+    const pdfDoc = new jsPDF();
+    
+    // En-tête
+    pdfDoc.setFontSize(24);
+    pdfDoc.setTextColor(99, 102, 241); // Indigo
+    pdfDoc.text('BS EXPRESS', 105, 20, { align: 'center' });
+    
+    pdfDoc.setFontSize(14);
+    pdfDoc.setTextColor(0, 0, 0);
+    pdfDoc.text('FACTURE', 105, 30, { align: 'center' });
+    
+    // Informations client
+    pdfDoc.setFontSize(10);
+    pdfDoc.text('Client:', 20, 45);
+    pdfDoc.setFontSize(12);
+    pdfDoc.setFont('helvetica', 'bold');
+    pdfDoc.text(checkoutName, 20, 52);
+    
+    pdfDoc.setFont('helvetica', 'normal');
+    pdfDoc.setFontSize(10);
+    pdfDoc.text(`Téléphone: ${checkoutPhone}`, 20, 58);
+    pdfDoc.text(`Adresse: ${checkoutAddress}`, 20, 64);
+    
+    // Date et numéro de facture
+    const invoiceNumber = 'CMD-' + Date.now();
+    pdfDoc.text(`Numéro: ${invoiceNumber}`, 140, 45);
+    pdfDoc.text(`Date: ${new Date().toLocaleDateString('fr-FR')}`, 140, 51);
+    
+    // Tableau des produits
+    const tableData = cart.map((item, index) => [
+      index + 1,
+      item.name,
+      item.quantity,
+      `${item.price} DZD`,
+      `${item.price * item.quantity} DZD`
+    ]);
+    
+    autoTable(pdfDoc, {
+      startY: 70,
+      head: [['#', 'Produit', 'Qté', 'Prix unit.', 'Total']],
+      body: tableData,
+      theme: 'striped',
+      headStyles: { fillColor: [99, 102, 241] },
+      margin: { left: 20, right: 20 }
+    });
+    
+    // Total
+    const finalY = pdfDoc.lastAutoTable.finalY + 10;
+    pdfDoc.setFontSize(12);
+    pdfDoc.setFont('helvetica', 'bold');
+    pdfDoc.text(`TOTAL: ${getTotalPrice()} DZD`, 150, finalY, { align: 'right' });
+    
+    // Footer
+    pdfDoc.setFont('helvetica', 'normal');
+    pdfDoc.setFontSize(8);
+    pdfDoc.setTextColor(100, 100, 100);
+    pdfDoc.text('Merci pour votre achat !', 105, 280, { align: 'center' });
+    pdfDoc.text('Zone de livraison: Tlemcen', 105, 285, { align: 'center' });
+    
+    // Sauvegarder
+    pdfDoc.save(`facture-${invoiceNumber}.pdf`);
+    showToast('success', 'Facture générée avec succès !');
+  };
+
   const handleCheckout = async () => {
     if (!checkoutName || !checkoutPhone || !checkoutAddress) {
       showToast('error', 'Veuillez remplir tous les champs');
@@ -431,17 +480,12 @@ function App() {
               onChange={(e) => setLoginPassword(e.target.value)}
               onKeyPress={(e) => {
                 if (e.key === 'Enter') {
-                  const foundUser = Object.values(users).find(
-                    u => u.username === loginUsername && u.passwordHash === hashPassword(loginPassword)
-                  );
                   const foundFirebaseAccount = accounts.find(
                     a => a.username === loginUsername && a.passwordHash === hashPassword(loginPassword)
                   );
                   
-                  const finalUser = foundUser || foundFirebaseAccount;
-                  
-                  if (finalUser) {
-                    setUser(finalUser);
+                  if (foundFirebaseAccount) {
+                    setUser(foundFirebaseAccount);
                     setCurrentPage('shop');
                     setLoginUsername('');
                     setLoginPassword('');
@@ -456,17 +500,12 @@ function App() {
             />
             <button
               onClick={() => {
-                const foundUser = Object.values(users).find(
-                  u => u.username === loginUsername && u.passwordHash === hashPassword(loginPassword)
-                );
                 const foundFirebaseAccount = accounts.find(
                   a => a.username === loginUsername && a.passwordHash === hashPassword(loginPassword)
                 );
                 
-                const finalUser = foundUser || foundFirebaseAccount;
-                
-                if (finalUser) {
-                  setUser(finalUser);
+                if (foundFirebaseAccount) {
+                  setUser(foundFirebaseAccount);
                   setCurrentPage('shop');
                   setLoginUsername('');
                   setLoginPassword('');
@@ -479,11 +518,6 @@ function App() {
             >
               Se connecter
             </button>
-          </div>
-          <div className="mt-6 p-4 bg-gray-50 rounded-xl text-sm">
-            <p className="font-bold mb-2 text-gray-700">Comptes de test :</p>
-            <p className="text-gray-600">👤 User: <span className="font-mono">user</span> / <span className="font-mono">user123</span></p>
-            <p className="text-gray-600">🔧 Admin: <span className="font-mono">admin</span> / <span className="font-mono">admin123</span></p>
           </div>
         </div>
         </div>
@@ -631,9 +665,15 @@ function App() {
               <div className="bg-blue-50 rounded-xl p-4">
                 <p className="font-bold text-blue-800">📍 Zone: Tlemcen</p>
               </div>
-              <button onClick={handleCheckout} className="w-full bg-green-500 text-white py-4 rounded-xl font-bold text-lg hover:bg-green-600 transition">
-                ✅ Confirmer la commande
-              </button>
+              <div className="flex flex-col gap-3">
+                <button onClick={generateInvoice} className="w-full flex items-center justify-center gap-2 bg-indigo-500 text-white py-3 rounded-xl font-bold hover:bg-indigo-600 transition">
+                  <FileText size={20} />
+                  Télécharger la facture PDF
+                </button>
+                <button onClick={handleCheckout} className="w-full bg-green-500 text-white py-4 rounded-xl font-bold text-lg hover:bg-green-600 transition">
+                  ✅ Confirmer la commande
+                </button>
+              </div>
             </div>
             <div className="bg-indigo-50 rounded-xl p-6">
               <h2 className="font-black text-xl mb-4">📋 Résumé</h2>

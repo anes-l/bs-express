@@ -35,6 +35,20 @@
             .register("/service-worker.js")
             .then((registration) => {
               console.log("✅ Service Worker enregistré :", registration.scope);
+              
+              // Vérifier les mises à jour toutes les heures
+              setInterval(() => {
+                registration.update();
+              }, 3600000);
+              
+              // Écouter les mises à jour disponibles
+              registration.addEventListener('updatefound', () => {
+                console.log('🔄 Nouvelle version disponible !');
+                // Notifier l'utilisateur
+                if (confirm('Une nouvelle version est disponible ! Voulez-vous recharger la page ?')) {
+                  window.location.reload();
+                }
+              });
             })
             .catch((error) => {
               console.error("❌ Erreur Service Worker :", error);
