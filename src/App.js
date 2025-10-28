@@ -476,26 +476,26 @@ function App() {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow-lg p-4 sticky top-0 z-50">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
             <h1 className="text-2xl font-black text-indigo-600">BS EXPRESS</h1>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2 justify-center">
               <button 
                 onClick={() => setCurrentPage('my-orders')} 
-                className="px-4 py-2 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition"
+                className="px-3 sm:px-4 py-2 bg-blue-500 text-white rounded-xl text-sm sm:text-base font-semibold hover:bg-blue-600 transition whitespace-nowrap"
               >
-                📦 Mes Commandes
+                📦 Commandes
               </button>
               {user?.isAdmin && (
                 <button 
                   onClick={() => setCurrentPage('admin')} 
-                  className="px-4 py-2 bg-purple-500 text-white rounded-xl font-semibold hover:bg-purple-600 transition"
+                  className="px-3 sm:px-4 py-2 bg-purple-500 text-white rounded-xl text-sm sm:text-base font-semibold hover:bg-purple-600 transition whitespace-nowrap"
                 >
                   🔧 Admin
                 </button>
               )}
               <button 
                 onClick={() => { setUser(null); setCurrentPage('login'); setCart([]) }} 
-                className="px-4 py-2 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 transition"
+                className="px-3 sm:px-4 py-2 bg-red-500 text-white rounded-xl text-sm sm:text-base font-semibold hover:bg-red-600 transition whitespace-nowrap"
               >
                 Déconnexion
               </button>
@@ -637,18 +637,18 @@ function App() {
     
     return (
       <div className="min-h-screen bg-gray-50">
-        <div className="bg-white shadow p-4 flex justify-between items-center sticky top-0 z-50">
-          <h1 className="text-2xl font-black text-blue-600">📦 Mes Commandes</h1>
-          <div className="flex gap-2">
-            <button onClick={() => setCurrentPage('shop')} className="px-4 py-2 bg-indigo-500 text-white rounded-xl font-semibold hover:bg-indigo-600">
+        <div className="bg-white shadow p-4 flex flex-col sm:flex-row justify-between items-center gap-3 sticky top-0 z-50">
+          <h1 className="text-xl sm:text-2xl font-black text-blue-600">📦 Mes Commandes</h1>
+          <div className="flex flex-wrap gap-2 justify-center">
+            <button onClick={() => setCurrentPage('shop')} className="px-3 sm:px-4 py-2 bg-indigo-500 text-white rounded-xl text-sm sm:text-base font-semibold hover:bg-indigo-600 whitespace-nowrap">
               Boutique
             </button>
             {user?.isAdmin && (
-              <button onClick={() => setCurrentPage('admin')} className="px-4 py-2 bg-purple-500 text-white rounded-xl font-semibold hover:bg-purple-600">
+              <button onClick={() => setCurrentPage('admin')} className="px-3 sm:px-4 py-2 bg-purple-500 text-white rounded-xl text-sm sm:text-base font-semibold hover:bg-purple-600 whitespace-nowrap">
                 🔧 Admin
               </button>
             )}
-            <button onClick={() => { setUser(null); setCurrentPage('login'); }} className="px-4 py-2 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600">
+            <button onClick={() => { setUser(null); setCurrentPage('login'); }} className="px-3 sm:px-4 py-2 bg-red-500 text-white rounded-xl text-sm sm:text-base font-semibold hover:bg-red-600 whitespace-nowrap">
               Déconnexion
             </button>
           </div>
@@ -726,34 +726,34 @@ function App() {
 
     return (
       <div className="min-h-screen bg-gray-50">
-        <div className="bg-white shadow p-4 flex justify-between items-center sticky top-0 z-50">
-          <h1 className="text-2xl font-black text-purple-600">🔧 Panel Admin</h1>
-          <div className="flex gap-2">
-            <button onClick={() => setCurrentPage('shop')} className="px-4 py-2 bg-indigo-500 text-white rounded-xl font-semibold hover:bg-indigo-600">
+        <div className="bg-white shadow p-4 flex flex-col sm:flex-row justify-between items-center gap-3 sticky top-0 z-50">
+          <h1 className="text-xl sm:text-2xl font-black text-purple-600">🔧 Panel Admin</h1>
+          <div className="flex flex-wrap gap-2 justify-center">
+            <button onClick={() => setCurrentPage('shop')} className="px-3 sm:px-4 py-2 bg-indigo-500 text-white rounded-xl text-sm sm:text-base font-semibold hover:bg-indigo-600 whitespace-nowrap">
               Boutique
             </button>
-            <button onClick={() => { setUser(null); setCurrentPage('login'); }} className="px-4 py-2 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600">
+            <button onClick={() => { setUser(null); setCurrentPage('login'); }} className="px-3 sm:px-4 py-2 bg-red-500 text-white rounded-xl text-sm sm:text-base font-semibold hover:bg-red-600 whitespace-nowrap">
               Déconnexion
             </button>
           </div>
         </div>
         
-        <div className="p-8">
-          <div className="flex gap-4 mb-8">
-            <button className="px-6 py-3 bg-purple-600 text-white rounded-xl font-bold">
+        <div className="p-4 sm:p-8">
+          <div className="flex flex-wrap gap-2 sm:gap-4 mb-6 sm:mb-8 justify-center sm:justify-start">
+            <button className="px-4 sm:px-6 py-3 bg-purple-600 text-white rounded-xl text-sm sm:text-base font-bold whitespace-nowrap">
               📦 Commandes
             </button>
             <button 
               onClick={() => setCurrentPage('admin-products')} 
-              className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-300"
+              className="px-4 sm:px-6 py-3 bg-gray-200 text-gray-700 rounded-xl text-sm sm:text-base font-bold hover:bg-gray-300 whitespace-nowrap"
             >
               🛍️ Produits
             </button>
             <button 
               onClick={() => setCurrentPage('admin-accounts')} 
-              className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-300"
+              className="px-4 sm:px-6 py-3 bg-gray-200 text-gray-700 rounded-xl text-sm sm:text-base font-bold hover:bg-gray-300 whitespace-nowrap"
             >
-              👥 Comptes Clients
+              👥 Comptes
             </button>
           </div>
 
@@ -940,34 +940,34 @@ function App() {
           </div>
         )}
 
-        <div className="bg-white shadow p-4 flex justify-between items-center sticky top-0 z-40">
-          <h1 className="text-2xl font-black text-purple-600">🛍️ Gestion des Produits</h1>
-          <div className="flex gap-2">
-            <button onClick={() => setCurrentPage('shop')} className="px-4 py-2 bg-indigo-500 text-white rounded-xl font-semibold hover:bg-indigo-600">
+        <div className="bg-white shadow p-4 flex flex-col sm:flex-row justify-between items-center gap-3 sticky top-0 z-40">
+          <h1 className="text-xl sm:text-2xl font-black text-purple-600">🛍️ Gestion Produits</h1>
+          <div className="flex flex-wrap gap-2 justify-center">
+            <button onClick={() => setCurrentPage('shop')} className="px-3 sm:px-4 py-2 bg-indigo-500 text-white rounded-xl text-sm sm:text-base font-semibold hover:bg-indigo-600 whitespace-nowrap">
               Boutique
             </button>
-            <button onClick={() => { setUser(null); setCurrentPage('login'); }} className="px-4 py-2 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600">
+            <button onClick={() => { setUser(null); setCurrentPage('login'); }} className="px-3 sm:px-4 py-2 bg-red-500 text-white rounded-xl text-sm sm:text-base font-semibold hover:bg-red-600 whitespace-nowrap">
               Déconnexion
             </button>
           </div>
         </div>
         
-        <div className="p-8">
-          <div className="flex gap-4 mb-8">
+        <div className="p-4 sm:p-8">
+          <div className="flex flex-wrap gap-2 sm:gap-4 mb-6 sm:mb-8 justify-center sm:justify-start">
             <button 
               onClick={() => setCurrentPage('admin')} 
-              className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-300"
+              className="px-4 sm:px-6 py-3 bg-gray-200 text-gray-700 rounded-xl text-sm sm:text-base font-bold hover:bg-gray-300 whitespace-nowrap"
             >
               📦 Commandes
             </button>
-            <button className="px-6 py-3 bg-purple-600 text-white rounded-xl font-bold">
+            <button className="px-4 sm:px-6 py-3 bg-purple-600 text-white rounded-xl text-sm sm:text-base font-bold whitespace-nowrap">
               🛍️ Produits
             </button>
             <button 
               onClick={() => setCurrentPage('admin-accounts')} 
-              className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-300"
+              className="px-4 sm:px-6 py-3 bg-gray-200 text-gray-700 rounded-xl text-sm sm:text-base font-bold hover:bg-gray-300 whitespace-nowrap"
             >
-              👥 Comptes Clients
+              👥 Comptes
             </button>
           </div>
 
