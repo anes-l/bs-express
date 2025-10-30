@@ -4,27 +4,18 @@ import Toasts from './components/Toasts';
 import AdminOrders from './views/AdminOrders';
 import AdminProducts from './views/AdminProducts';
 import AdminAccounts from './views/AdminAccounts';
-import { db } from "./firebase";
-import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from "firebase/firestore";
+import { db, auth } from "./firebase";
+import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, getDoc, setDoc } from "firebase/firestore";
+import { signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from "firebase/auth";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-
-const hashPassword = (password) => {
-  let hash = 0;
-  for (let i = 0; i < password.length; i++) {
-    const char = password.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
-  }
-  return hash.toString(36);
-};
-
 
 function App() {
   const [currentPage, setCurrentPage] = React.useState('login');
   const [user, setUser] = React.useState(null);
+  const [firebaseUser, setFirebaseUser] = React.useState(null);
   const [cart, setCart] = React.useState([]);
-  const [loginUsername, setLoginUsername] = React.useState('');
+  const [loginEmail, setLoginEmail] = React.useState('');
   const [loginPassword, setLoginPassword] = React.useState('');
   const [checkoutName, setCheckoutName] = React.useState('');
   const [checkoutPhone, setCheckoutPhone] = React.useState('');
@@ -46,7 +37,7 @@ function App() {
   const [showAccountModal, setShowAccountModal] = React.useState(false);
   const [editingAccount, setEditingAccount] = React.useState(null);
   const [accountForm, setAccountForm] = React.useState({
-    username: '',
+    email: '',
     password: '',
     name: '',
     phone: '',
@@ -62,6 +53,44 @@ function App() {
     window.setTimeout(() => removeToast(id), duration);
   };
   const renderToasts = () => <Toasts toasts={toasts} />;
+
+  // Écouter les changements d'authentification Firebase
+  React.useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      console.log('🔐 État auth changé:', firebaseUser?.uid);
+      
+      if (firebaseUser) {
+        setFirebaseUser(firebaseUser);
+        
+        try {
+          const userDoc = await getDoc(doc(db, "accounts", firebaseUser.uid));
+          if (userDoc.exists()) {
+            const userData = { id: userDoc.id, ...userDoc.data() };
+            setUser(userData);
+            console.log('✅ Utilisateur chargé:', userData);
+            
+            if (currentPage === 'login') {
+              setCurrentPage('shop');
+            }
+          } else {
+            console.log('❌ Pas de données utilisateur dans Firestore');
+            setUser(null);
+            setCurrentPage('login');
+          }
+        } catch (error) {
+          console.error('❌ Erreur chargement user:', error);
+        }
+      } else {
+        setFirebaseUser(null);
+        setUser(null);
+        setCurrentPage('login');
+      }
+      
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const loadOrders = React.useCallback(async () => {
     try {
@@ -83,8 +112,6 @@ function App() {
       setProducts(firebaseProducts);
     } catch (error) {
       console.error('❌ Erreur chargement produits:', error);
-      console.error('Code:', error.code);
-      console.error('Message:', error.message);
       setProducts([]);
     }
   }, []);
@@ -98,20 +125,60 @@ function App() {
       setAccounts(firebaseAccounts);
     } catch (error) {
       console.error('❌ Erreur chargement comptes:', error);
-      console.error('Code:', error.code);
-      console.error('Message:', error.message);
       setAccounts([]);
     }
   }, []);
 
   React.useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      await Promise.all([loadOrders(), loadProducts(), loadAccounts()]);
+    if (firebaseUser) {
+      const loadData = async () => {
+        await Promise.all([loadOrders(), loadProducts(), loadAccounts()]);
+      };
+      loadData();
+    }
+  }, [firebaseUser, loadOrders, loadProducts, loadAccounts]);
+
+  const handleLogin = async () => {
+    if (!loginEmail || !loginPassword) {
+      showToast('error', 'Veuillez remplir tous les champs');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      console.log('🔐 Tentative de connexion:', loginEmail);
+      await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
+      setLoginEmail('');
+      setLoginPassword('');
+      showToast('success', 'Connexion réussie !');
+    } catch (error) {
+      console.error('❌ Erreur connexion:', error);
+      if (error.code === 'auth/invalid-credential') {
+        showToast('error', 'Email ou mot de passe incorrect');
+      } else if (error.code === 'auth/user-not-found') {
+        showToast('error', 'Utilisateur non trouvé');
+      } else if (error.code === 'auth/wrong-password') {
+        showToast('error', 'Mot de passe incorrect');
+      } else {
+        showToast('error', 'Erreur de connexion: ' + error.message);
+      }
+    } finally {
       setLoading(false);
-    };
-    loadData();
-  }, [loadOrders, loadProducts, loadAccounts]);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setUser(null);
+      setCart([]);
+      setCurrentPage('login');
+      showToast('success', 'Déconnexion réussie');
+    } catch (error) {
+      console.error('❌ Erreur déconnexion:', error);
+      showToast('error', 'Erreur lors de la déconnexion');
+    }
+  };
 
   const openProductModal = (product = null) => {
     if (product) {
@@ -146,27 +213,19 @@ function App() {
       image: productForm.image
     };
 
-    console.log('💾 Tentative de sauvegarde produit:', productData);
-
     try {
       if (editingProduct) {
-        console.log('📝 Modification du produit:', editingProduct.id);
         await updateDoc(doc(db, "products", editingProduct.id), productData);
-        console.log('✅ Produit modifié');
         showToast('success', 'Produit modifié avec succès !');
       } else {
-        console.log('➕ Ajout nouveau produit');
-        const docRef = await addDoc(collection(db, "products"), productData);
-        console.log('✅ Produit ajouté avec ID:', docRef.id);
+        await addDoc(collection(db, "products"), productData);
         showToast('success', 'Produit ajouté avec succès !');
       }
       await loadProducts();
       closeProductModal();
     } catch (error) {
       console.error('❌ Erreur sauvegarde produit:', error);
-      console.error('Code erreur:', error.code);
-      console.error('Message:', error.message);
-      showToast('error', 'Erreur: ' + error.message + '\nVérifiez les règles Firestore.');
+      showToast('error', 'Erreur: ' + error.message);
     }
   };
 
@@ -177,7 +236,6 @@ function App() {
 
     try {
       await deleteDoc(doc(db, "products", productId));
-      console.log('✅ Produit supprimé');
       showToast('success', 'Produit supprimé avec succès !');
       await loadProducts();
     } catch (error) {
@@ -190,7 +248,7 @@ function App() {
     if (account) {
       setEditingAccount(account);
       setAccountForm({
-        username: account.username,
+        email: account.email || '',
         password: '',
         name: account.name,
         phone: account.phone,
@@ -198,7 +256,7 @@ function App() {
       });
     } else {
       setEditingAccount(null);
-      setAccountForm({ username: '', password: '', name: '', phone: '', address: '' });
+      setAccountForm({ email: '', password: '', name: '', phone: '', address: '' });
     }
     setShowAccountModal(true);
   };
@@ -206,11 +264,11 @@ function App() {
   const closeAccountModal = () => {
     setShowAccountModal(false);
     setEditingAccount(null);
-    setAccountForm({ username: '', password: '', name: '', phone: '', address: '' });
+    setAccountForm({ email: '', password: '', name: '', phone: '', address: '' });
   };
 
   const handleSaveAccount = async () => {
-    if (!accountForm.username || !accountForm.name || !accountForm.phone || !accountForm.address) {
+    if (!accountForm.email || !accountForm.name || !accountForm.phone || !accountForm.address) {
       showToast('error', 'Veuillez remplir tous les champs obligatoires');
       return;
     }
@@ -221,44 +279,46 @@ function App() {
     }
 
     const accountData = {
-      username: accountForm.username,
+      email: accountForm.email,
       name: accountForm.name,
       phone: accountForm.phone,
       address: accountForm.address,
       isAdmin: false
     };
 
-    if (accountForm.password) {
-      accountData.passwordHash = hashPassword(accountForm.password);
-    }
-
-    console.log('💾 Tentative de sauvegarde compte:', accountData);
-
     try {
       if (editingAccount) {
-        console.log('📝 Modification du compte:', editingAccount.id);
+        // Modification d'un compte existant
         await updateDoc(doc(db, "accounts", editingAccount.id), accountData);
-        console.log('✅ Compte modifié dans Firebase');
         showToast('success', 'Compte modifié avec succès !');
       } else {
-        const existingAccount = accounts.find(a => a.username === accountForm.username);
+        // Création d'un nouveau compte
+        const existingAccount = accounts.find(a => a.email === accountForm.email);
         if (existingAccount) {
-          showToast('error', 'Ce nom d\'utilisateur existe déjà !');
+          showToast('error', 'Cet email existe déjà !');
           return;
         }
         
-        console.log('➕ Ajout nouveau compte');
-        const docRef = await addDoc(collection(db, "accounts"), accountData);
-        console.log('✅ Compte créé dans Firebase avec ID:', docRef.id);
+        // Créer le compte dans Firebase Auth
+        const userCredential = await createUserWithEmailAndPassword(auth, accountForm.email, accountForm.password);
+        const uid = userCredential.user.uid;
+        
+        // Créer le document dans Firestore avec l'UID comme ID
+        await setDoc(doc(db, "accounts", uid), accountData);
+        
         showToast('success', 'Compte créé avec succès !');
       }
       await loadAccounts();
       closeAccountModal();
     } catch (error) {
       console.error('❌ Erreur sauvegarde compte:', error);
-      console.error('Code erreur:', error.code);
-      console.error('Message:', error.message);
-      showToast('error', 'Erreur: ' + error.message + '\nVérifiez les règles Firestore.');
+      if (error.code === 'auth/email-already-in-use') {
+        showToast('error', 'Cet email est déjà utilisé !');
+      } else if (error.code === 'auth/weak-password') {
+        showToast('error', 'Le mot de passe doit contenir au moins 6 caractères');
+      } else {
+        showToast('error', 'Erreur: ' + error.message);
+      }
     }
   };
 
@@ -268,15 +328,11 @@ function App() {
     }
 
     try {
-      console.log('🗑️ Suppression du compte:', accountId);
       await deleteDoc(doc(db, "accounts", accountId));
-      console.log('✅ Compte supprimé de Firebase');
       showToast('success', 'Compte supprimé avec succès !');
       await loadAccounts();
     } catch (error) {
       console.error('❌ Erreur suppression compte:', error);
-      console.error('Code erreur:', error.code);
-      console.error('Message:', error.message);
       showToast('error', 'Erreur: ' + error.message);
     }
   };
@@ -308,16 +364,14 @@ function App() {
   const generateInvoice = () => {
     const pdfDoc = new jsPDF();
     
-    // En-tête
     pdfDoc.setFontSize(24);
-    pdfDoc.setTextColor(99, 102, 241); // Indigo
+    pdfDoc.setTextColor(99, 102, 241);
     pdfDoc.text('BS EXPRESS', 105, 20, { align: 'center' });
     
     pdfDoc.setFontSize(14);
     pdfDoc.setTextColor(0, 0, 0);
     pdfDoc.text('FACTURE', 105, 30, { align: 'center' });
     
-    // Informations client
     pdfDoc.setFontSize(10);
     pdfDoc.text('Client:', 20, 45);
     pdfDoc.setFontSize(12);
@@ -329,12 +383,10 @@ function App() {
     pdfDoc.text(`Téléphone: ${checkoutPhone}`, 20, 58);
     pdfDoc.text(`Adresse: ${checkoutAddress}`, 20, 64);
     
-    // Date et numéro de facture
     const invoiceNumber = 'CMD-' + Date.now();
     pdfDoc.text(`Numéro: ${invoiceNumber}`, 140, 45);
     pdfDoc.text(`Date: ${new Date().toLocaleDateString('fr-FR')}`, 140, 51);
     
-    // Tableau des produits
     const tableData = cart.map((item, index) => [
       index + 1,
       item.name,
@@ -352,20 +404,17 @@ function App() {
       margin: { left: 20, right: 20 }
     });
     
-    // Total
     const finalY = pdfDoc.lastAutoTable.finalY + 10;
     pdfDoc.setFontSize(12);
     pdfDoc.setFont('helvetica', 'bold');
     pdfDoc.text(`TOTAL: ${getTotalPrice()} DZD`, 150, finalY, { align: 'right' });
     
-    // Footer
     pdfDoc.setFont('helvetica', 'normal');
     pdfDoc.setFontSize(8);
     pdfDoc.setTextColor(100, 100, 100);
     pdfDoc.text('Merci pour votre achat !', 105, 280, { align: 'center' });
     pdfDoc.text('Zone de livraison: Tlemcen', 105, 285, { align: 'center' });
     
-    // Sauvegarder
     pdfDoc.save(`facture-${invoiceNumber}.pdf`);
     showToast('success', 'Facture générée avec succès !');
   };
@@ -394,12 +443,11 @@ function App() {
       date: new Date().toLocaleDateString('fr-FR'),
       time: new Date().toLocaleTimeString('fr-FR'),
       status: 'En attente',
-      userId: user?.username || 'guest'
+      userId: user?.id || firebaseUser?.uid || 'guest'
     };
 
     try {
-      const docRef = await addDoc(collection(db, "orders"), newOrder);
-      console.log('✅ Commande créée avec ID:', docRef.id);
+      await addDoc(collection(db, "orders"), newOrder);
       showToast('success', 'Commande confirmée ! Numéro: ' + newOrder.orderNumber);
       setCart([]);
       setCheckoutName('');
@@ -414,10 +462,7 @@ function App() {
   };
 
   const updateOrderStatus = async (orderId, newStatus) => {
-    console.log('🔄 Tentative de mise à jour:', { orderId, newStatus, type: typeof orderId });
-    
     if (!orderId || typeof orderId !== 'string') {
-      console.error('❌ ID invalide:', orderId);
       showToast('error', 'Erreur: ID de commande invalide');
       return;
     }
@@ -430,11 +475,8 @@ function App() {
     try {
       const orderRef = doc(db, "orders", orderId);
       await updateDoc(orderRef, { status: newStatus });
-      console.log('✅ Statut mis à jour avec succès:', orderId, '->', newStatus);
     } catch (error) {
       console.error("❌ Erreur de mise à jour Firebase:", error);
-      console.error("Details:", error.message);
-      console.error("Code d'erreur:", error.code);
       showToast('error', 'Erreur lors de la mise à jour: ' + error.message);
       await loadOrders(); 
     }
@@ -468,11 +510,11 @@ function App() {
           </div>
           <div className="space-y-4">
             <input
-              type="text"
-              value={loginUsername}
-              onChange={(e) => setLoginUsername(e.target.value)}
+              type="email"
+              value={loginEmail}
+              onChange={(e) => setLoginEmail(e.target.value)}
               className="w-full px-4 py-3 border-2 rounded-xl outline-none focus:border-indigo-500"
-              placeholder="Nom d'utilisateur"
+              placeholder="Email"
             />
             <input
               type="password"
@@ -480,43 +522,18 @@ function App() {
               onChange={(e) => setLoginPassword(e.target.value)}
               onKeyPress={(e) => {
                 if (e.key === 'Enter') {
-                  const foundFirebaseAccount = accounts.find(
-                    a => a.username === loginUsername && a.passwordHash === hashPassword(loginPassword)
-                  );
-                  
-                  if (foundFirebaseAccount) {
-                    setUser(foundFirebaseAccount);
-                    setCurrentPage('shop');
-                    setLoginUsername('');
-                    setLoginPassword('');
-                    showToast('success', 'Connexion réussie');
-                  } else {
-                    showToast('error', 'Identifiants incorrects');
-                  }
+                  handleLogin();
                 }
               }}
               className="w-full px-4 py-3 border-2 rounded-xl outline-none focus:border-indigo-500"
               placeholder="Mot de passe"
             />
             <button
-              onClick={() => {
-                const foundFirebaseAccount = accounts.find(
-                  a => a.username === loginUsername && a.passwordHash === hashPassword(loginPassword)
-                );
-                
-                if (foundFirebaseAccount) {
-                  setUser(foundFirebaseAccount);
-                  setCurrentPage('shop');
-                  setLoginUsername('');
-                  setLoginPassword('');
-                  showToast('success', 'Connexion réussie');
-                } else {
-                  showToast('error', 'Identifiants incorrects');
-                }
-              }}
-              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 rounded-xl font-bold hover:shadow-lg transition"
+              onClick={handleLogin}
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 rounded-xl font-bold hover:shadow-lg transition disabled:opacity-50"
             >
-              Se connecter
+              {loading ? 'Connexion...' : 'Se connecter'}
             </button>
           </div>
         </div>
@@ -549,7 +566,7 @@ function App() {
                 </button>
               )}
               <button 
-                onClick={() => { setUser(null); setCurrentPage('login'); setCart([]) }} 
+                onClick={handleLogout} 
                 className="px-3 sm:px-4 py-2 bg-red-500 text-white rounded-xl text-sm sm:text-base font-semibold hover:bg-red-600 transition whitespace-nowrap"
               >
                 Déconnexion
@@ -698,7 +715,7 @@ function App() {
   }
 
   if (currentPage === 'my-orders') {
-    const userOrders = user?.isAdmin ? orders : orders.filter(o => o.userId === user?.username);
+    const userOrders = user?.isAdmin ? orders : orders.filter(o => o.userId === user?.id || o.userId === firebaseUser?.uid);
     
     return (
       <>
@@ -715,7 +732,7 @@ function App() {
                 🔧 Admin
               </button>
             )}
-            <button onClick={() => { setUser(null); setCurrentPage('login'); }} className="px-3 sm:px-4 py-2 bg-red-500 text-white rounded-xl text-sm sm:text-base font-semibold hover:bg-red-600 whitespace-nowrap">
+            <button onClick={handleLogout} className="px-3 sm:px-4 py-2 bg-red-500 text-white rounded-xl text-sm sm:text-base font-semibold hover:bg-red-600 whitespace-nowrap">
               Déconnexion
             </button>
           </div>
@@ -784,6 +801,7 @@ function App() {
           setShowCompletedOrders={setShowCompletedOrders}
           setCurrentPage={setCurrentPage}
           updateOrderStatus={updateOrderStatus}
+          handleLogout={handleLogout}
         />
       </>
     );
@@ -805,6 +823,7 @@ function App() {
           setProductForm={setProductForm}
           handleSaveProduct={handleSaveProduct}
           handleDeleteProduct={handleDeleteProduct}
+          handleLogout={handleLogout}
         />
       </>
     );
@@ -826,6 +845,7 @@ function App() {
           setAccountForm={setAccountForm}
           handleSaveAccount={handleSaveAccount}
           handleDeleteAccount={handleDeleteAccount}
+          handleLogout={handleLogout}
         />
       </>
     );

@@ -13,6 +13,7 @@ export default function AdminProducts({
   setProductForm,
   handleSaveProduct,
   handleDeleteProduct,
+  handleLogout
 }) {
   if (!user?.isAdmin) {
     return (
@@ -113,7 +114,7 @@ export default function AdminProducts({
           <button onClick={() => setCurrentPage('shop')} className="px-3 sm:px-4 py-2 bg-indigo-500 text-white rounded-xl text-sm sm:text-base font-semibold hover:bg-indigo-600 whitespace-nowrap">
             Boutique
           </button>
-          <button onClick={() => { setCurrentPage('login'); }} className="px-3 sm:px-4 py-2 bg-red-500 text-white rounded-xl text-sm sm:text-base font-semibold hover:bg-red-600 whitespace-nowrap">
+          <button onClick={handleLogout} className="px-3 sm:px-4 py-2 bg-red-500 text-white rounded-xl text-sm sm:text-base font-semibold hover:bg-red-600 whitespace-nowrap">
             Déconnexion
           </button>
         </div>
@@ -194,5 +195,3 @@ export default function AdminProducts({
     </div>
   );
 }
-
-

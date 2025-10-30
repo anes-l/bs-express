@@ -7,8 +7,10 @@ export default function AdminOrders({
   setShowCompletedOrders,
   setCurrentPage,
   updateOrderStatus,
+  handleLogout
 }) {
   const [showPendingOnly, setShowPendingOnly] = React.useState(false);
+  
   if (!user?.isAdmin) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -35,7 +37,7 @@ export default function AdminOrders({
           <button onClick={() => setCurrentPage('shop')} className="px-3 sm:px-4 py-2 bg-indigo-500 text-white rounded-xl text-sm sm:text-base font-semibold hover:bg-indigo-600 whitespace-nowrap">
             Boutique
           </button>
-          <button onClick={() => { setCurrentPage('login'); }} className="px-3 sm:px-4 py-2 bg-red-500 text-white rounded-xl text-sm sm:text-base font-semibold hover:bg-red-600 whitespace-nowrap">
+          <button onClick={handleLogout} className="px-3 sm:px-4 py-2 bg-red-500 text-white rounded-xl text-sm sm:text-base font-semibold hover:bg-red-600 whitespace-nowrap">
             Déconnexion
           </button>
         </div>
@@ -60,26 +62,20 @@ export default function AdminOrders({
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {/* 🎯 GRANDES CARTES STATISTIQUES CLIQUABLES */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 max-w-4xl mx-auto">
           <div 
-            onClick={() => { setShowCompletedOrders(false); setShowPendingOnly(false); }}
-            className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl p-6 shadow-lg cursor-pointer hover:shadow-2xl transition transform hover:scale-105"
+            onClick={() => { setShowCompletedOrders(false); }}
+            className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl p-8 shadow-lg cursor-pointer hover:shadow-2xl transition transform hover:scale-105"
           >
             <p className="text-sm mb-2 text-blue-100">En cours</p>
-            <p className="text-5xl font-black">{orders.filter(o => o.status === 'En cours').length}</p>
+            <p className="text-5xl font-black">{orders.filter(o => o.status === 'En cours' || o.status === 'En attente').length}</p>
             <p className="text-xs mt-2 text-blue-100">Cliquez pour voir →</p>
           </div>
+          
           <div 
-            onClick={() => { setShowPendingOnly(true); setShowCompletedOrders(false); }}
-            className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl p-6 shadow-lg cursor-pointer hover:shadow-2xl transition transform hover:scale-105"
-          >
-            <p className="text-sm mb-2 text-orange-100">En attente</p>
-            <p className="text-5xl font-black">{orders.filter(o => o.status === 'En attente').length}</p>
-            <p className="text-xs mt-2 text-orange-100">Cliquez pour voir →</p>
-          </div>
-          <div 
-            onClick={() => { setShowCompletedOrders(true); setShowPendingOnly(false); }}
-            className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl p-6 shadow-lg cursor-pointer hover:shadow-2xl transition transform hover:scale-105"
+            onClick={() => { setShowCompletedOrders(true); }}
+            className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl p-8 shadow-lg cursor-pointer hover:shadow-2xl transition transform hover:scale-105"
           >
             <p className="text-sm mb-2 text-green-100">Traitées</p>
             <p className="text-5xl font-black">{orders.filter(o => o.status === 'Traitée').length}</p>
@@ -88,65 +84,64 @@ export default function AdminOrders({
         </div>
         
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-3xl font-black">
-            {showPendingOnly ? '⏳ Commandes En Attente' : showCompletedOrders ? '✅ Commandes Traitées' : '📦 Commandes En Cours'}
+          <h2 className="text-2xl sm:text-3xl font-black">
+            {showCompletedOrders ? '✅ Commandes Traitées' : '📦 Commandes En Cours'}
           </h2>
         </div>
 
         {orders.filter(o => {
-          if (showPendingOnly) return o.status === 'En attente';
           if (showCompletedOrders) return o.status === 'Traitée';
           return o.status !== 'Traitée';
         }).length === 0 ? (
           <div className="bg-white rounded-xl p-12 text-center shadow-lg">
             <div className="text-6xl mb-4">📦</div>
             <p className="text-gray-500 font-bold text-xl">
-              {showPendingOnly ? 'Aucune commande en attente' : showCompletedOrders ? 'Aucune commande traitée' : 'Aucune commande en cours'}
+              {showCompletedOrders ? 'Aucune commande traitée' : 'Aucune commande en cours'}
             </p>
           </div>
         ) : (
           <div className="space-y-4">
             {orders.filter(o => {
-              if (showPendingOnly) return o.status === 'En attente';
               if (showCompletedOrders) return o.status === 'Traitée';
               return o.status !== 'Traitée';
             }).map(order => (
-              <div key={order.id} className="bg-white rounded-xl p-6 shadow-lg border-2 border-purple-100">
-                <div className="flex justify-between items-start mb-4">
+              <div key={order.id} className="bg-white rounded-xl p-4 sm:p-6 shadow-lg border-2 border-purple-100">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
                   <div>
-                    <h3 className="font-black text-xl">{order.orderNumber}</h3>
-                    <p className="text-sm text-gray-600">{order.date} à {order.time}</p>
+                    <h3 className="font-black text-lg sm:text-xl">{order.orderNumber}</h3>
+                    <p className="text-xs sm:text-sm text-gray-600">{order.date} à {order.time}</p>
                   </div>
                   <select
-                    value={order.status}
+                    value={order.status === 'En attente' ? 'En cours' : order.status}
                     onChange={(e) => updateOrderStatus(order.id, e.target.value)}
-                    className={`px-4 py-2 rounded-full text-sm font-bold border-2 outline-none cursor-pointer ${
+                    className={`px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-bold border-2 outline-none cursor-pointer w-full sm:w-auto ${
                       order.status === 'Traitée' ? 'bg-green-100 text-green-700 border-green-300' : 
-                      order.status === 'En cours' ? 'bg-blue-100 text-blue-700 border-blue-300' : 
-                      'bg-orange-100 text-orange-700 border-orange-300'
+                      'bg-blue-100 text-blue-700 border-blue-300'
                     }`}
                   >
-                    <option value="En attente">En attente</option>
                     <option value="En cours">En cours</option>
                     <option value="Traitée">Traitée</option>
                   </select>
                 </div>
-                <div className="bg-purple-50 rounded-xl p-4 mb-4">
-                  <p className="font-bold text-lg">👤 {order.clientName}</p>
-                  <p className="text-sm text-purple-600 font-semibold">📞 {order.clientPhone}</p>
-                  <p className="text-sm text-purple-600">📍 {order.clientAddress}</p>
+                
+                <div className="bg-purple-50 rounded-xl p-3 sm:p-4 mb-4">
+                  <p className="font-bold text-base sm:text-lg">👤 {order.clientName}</p>
+                  <p className="text-xs sm:text-sm text-purple-600 font-semibold">📞 {order.clientPhone}</p>
+                  <p className="text-xs sm:text-sm text-purple-600">📍 {order.clientAddress}</p>
                 </div>
+                
                 <div className="space-y-2 mb-4">
                   {order.items.map(item => (
-                    <div key={item.id} className="flex justify-between text-sm bg-gray-50 p-2 rounded">
+                    <div key={item.id} className="flex justify-between text-xs sm:text-sm bg-gray-50 p-2 rounded">
                       <span>{item.name} x{item.quantity}</span>
                       <span className="font-bold">{item.price * item.quantity} DZD</span>
                     </div>
                   ))}
                 </div>
+                
                 <div className="border-t-2 border-purple-200 mt-4 pt-4 flex justify-between items-center">
-                  <span className="font-black text-lg">Total</span>
-                  <span className="font-black text-2xl text-purple-600">{order.total} DZD</span>
+                  <span className="font-black text-base sm:text-lg">Total</span>
+                  <span className="font-black text-xl sm:text-2xl text-purple-600">{order.total} DZD</span>
                 </div>
               </div>
             ))}
@@ -156,5 +151,3 @@ export default function AdminOrders({
     </div>
   );
 }
-
-
