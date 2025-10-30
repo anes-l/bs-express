@@ -9,7 +9,7 @@ export default function AdminOrders({
   updateOrderStatus,
   handleLogout
 }) {
-  const [showPendingOnly, setShowPendingOnly] = React.useState(false);
+  const [showCancelledOnly, setShowCancelledOnly] = React.useState(false);
   
   if (!user?.isAdmin) {
     return (
@@ -34,38 +34,38 @@ export default function AdminOrders({
       <div className="bg-white shadow p-4 flex flex-col sm:flex-row justify-between items-center gap-3 sticky top-0 z-50">
         <h1 className="text-xl sm:text-2xl font-black text-purple-600">🔧 Panel Admin</h1>
         <div className="flex flex-wrap gap-2 justify-center">
-          <button onClick={() => setCurrentPage('shop')} className="px-3 sm:px-4 py-2 bg-indigo-500 text-white rounded-xl text-sm sm:text-base font-semibold hover:bg-indigo-600 whitespace-nowrap">
+          <button onClick={() => setCurrentPage('shop')} className="px-4 py-3 bg-indigo-500 text-white rounded-xl font-semibold hover:bg-indigo-600 whitespace-nowrap">
             Boutique
           </button>
-          <button onClick={handleLogout} className="px-3 sm:px-4 py-2 bg-red-500 text-white rounded-xl text-sm sm:text-base font-semibold hover:bg-red-600 whitespace-nowrap">
+          <button onClick={handleLogout} className="px-4 py-3 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 whitespace-nowrap">
             Déconnexion
           </button>
         </div>
       </div>
       
       <div className="p-4 sm:p-8">
-        <div className="flex flex-wrap gap-2 sm:gap-4 mb-6 sm:mb-8 justify-center sm:justify-start">
-          <button className="px-4 sm:px-6 py-3 bg-purple-600 text-white rounded-xl text-sm sm:text-base font-bold whitespace-nowrap">
+        <div className="flex flex-wrap gap-3 mb-8 justify-center sm:justify-start">
+          <button className="px-5 py-3 bg-purple-600 text-white rounded-xl font-bold whitespace-nowrap">
             📦 Commandes
           </button>
           <button 
             onClick={() => setCurrentPage('admin-products')} 
-            className="px-4 sm:px-6 py-3 bg-gray-200 text-gray-700 rounded-xl text-sm sm:text-base font-bold hover:bg-gray-300 whitespace-nowrap"
+            className="px-5 py-3 bg-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-300 whitespace-nowrap"
           >
             🛍️ Produits
           </button>
           <button 
             onClick={() => setCurrentPage('admin-accounts')} 
-            className="px-4 sm:px-6 py-3 bg-gray-200 text-gray-700 rounded-xl text-sm sm:text-base font-bold hover:bg-gray-300 whitespace-nowrap"
+            className="px-5 py-3 bg-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-300 whitespace-nowrap"
           >
             👥 Comptes
           </button>
         </div>
 
         {/* 🎯 GRANDES CARTES STATISTIQUES CLIQUABLES */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div 
-            onClick={() => { setShowCompletedOrders(false); }}
+            onClick={() => { setShowCompletedOrders(false); setShowCancelledOnly(false); }}
             className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl p-8 shadow-lg cursor-pointer hover:shadow-2xl transition transform hover:scale-105"
           >
             <p className="text-sm mb-2 text-blue-100">En cours</p>
@@ -74,7 +74,16 @@ export default function AdminOrders({
           </div>
           
           <div 
-            onClick={() => { setShowCompletedOrders(true); }}
+            onClick={() => { setShowCancelledOnly(true); setShowCompletedOrders(false); }}
+            className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl p-8 shadow-lg cursor-pointer hover:shadow-2xl transition transform hover:scale-105"
+          >
+            <p className="text-sm mb-2 text-orange-100">Annulées</p>
+            <p className="text-5xl font-black">{orders.filter(o => o.status === 'Annulée').length}</p>
+            <p className="text-xs mt-2 text-orange-100">Cliquez pour voir →</p>
+          </div>
+          
+          <div 
+            onClick={() => { setShowCompletedOrders(true); setShowCancelledOnly(false); }}
             className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl p-8 shadow-lg cursor-pointer hover:shadow-2xl transition transform hover:scale-105"
           >
             <p className="text-sm mb-2 text-green-100">Traitées</p>
@@ -85,25 +94,27 @@ export default function AdminOrders({
         
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl sm:text-3xl font-black">
-            {showCompletedOrders ? '✅ Commandes Traitées' : '📦 Commandes En Cours'}
+            {showCancelledOnly ? '❌ Commandes Annulées' : showCompletedOrders ? '✅ Commandes Traitées' : '📦 Commandes En Cours'}
           </h2>
         </div>
 
         {orders.filter(o => {
+          if (showCancelledOnly) return o.status === 'Annulée';
           if (showCompletedOrders) return o.status === 'Traitée';
-          return o.status !== 'Traitée';
+          return o.status === 'En cours' || o.status === 'En attente';
         }).length === 0 ? (
           <div className="bg-white rounded-xl p-12 text-center shadow-lg">
             <div className="text-6xl mb-4">📦</div>
             <p className="text-gray-500 font-bold text-xl">
-              {showCompletedOrders ? 'Aucune commande traitée' : 'Aucune commande en cours'}
+              {showCancelledOnly ? 'Aucune commande annulée' : showCompletedOrders ? 'Aucune commande traitée' : 'Aucune commande en cours'}
             </p>
           </div>
         ) : (
           <div className="space-y-4">
             {orders.filter(o => {
+              if (showCancelledOnly) return o.status === 'Annulée';
               if (showCompletedOrders) return o.status === 'Traitée';
-              return o.status !== 'Traitée';
+              return o.status === 'En cours' || o.status === 'En attente';
             }).map(order => (
               <div key={order.id} className="bg-white rounded-xl p-4 sm:p-6 shadow-lg border-2 border-purple-100">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
@@ -112,14 +123,16 @@ export default function AdminOrders({
                     <p className="text-xs sm:text-sm text-gray-600">{order.date} à {order.time}</p>
                   </div>
                   <select
-                    value={order.status === 'En attente' ? 'En cours' : order.status}
+                    value={order.status}
                     onChange={(e) => updateOrderStatus(order.id, e.target.value)}
                     className={`px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-bold border-2 outline-none cursor-pointer w-full sm:w-auto ${
                       order.status === 'Traitée' ? 'bg-green-100 text-green-700 border-green-300' : 
+                      order.status === 'Annulée' ? 'bg-orange-100 text-orange-700 border-orange-300' :
                       'bg-blue-100 text-blue-700 border-blue-300'
                     }`}
                   >
                     <option value="En cours">En cours</option>
+                    <option value="Annulée">Annulée</option>
                     <option value="Traitée">Traitée</option>
                   </select>
                 </div>

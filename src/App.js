@@ -442,7 +442,7 @@ function App() {
       total: getTotalPrice(),
       date: new Date().toLocaleDateString('fr-FR'),
       time: new Date().toLocaleTimeString('fr-FR'),
-      status: 'En attente',
+      status: 'En cours',
       userId: user?.id || firebaseUser?.uid || 'guest'
     };
 
@@ -553,21 +553,21 @@ function App() {
             <div className="flex flex-wrap gap-2 justify-center">
               <button 
                 onClick={() => setCurrentPage('my-orders')} 
-                className="px-3 sm:px-4 py-2 bg-blue-500 text-white rounded-xl text-sm sm:text-base font-semibold hover:bg-blue-600 transition whitespace-nowrap"
+                className="px-4 py-3 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition whitespace-nowrap"
               >
                 📦 Commandes
               </button>
               {user?.isAdmin && (
                 <button 
                   onClick={() => setCurrentPage('admin')} 
-                  className="px-3 sm:px-4 py-2 bg-purple-500 text-white rounded-xl text-sm sm:text-base font-semibold hover:bg-purple-600 transition whitespace-nowrap"
+                  className="px-4 py-3 bg-purple-500 text-white rounded-xl font-semibold hover:bg-purple-600 transition whitespace-nowrap"
                 >
                   🔧 Admin
                 </button>
               )}
               <button 
                 onClick={handleLogout} 
-                className="px-3 sm:px-4 py-2 bg-red-500 text-white rounded-xl text-sm sm:text-base font-semibold hover:bg-red-600 transition whitespace-nowrap"
+                className="px-4 py-3 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 transition whitespace-nowrap"
               >
                 Déconnexion
               </button>
@@ -724,15 +724,15 @@ function App() {
         <div className="bg-white shadow p-4 flex flex-col sm:flex-row justify-between items-center gap-3 sticky top-0 z-50">
           <h1 className="text-xl sm:text-2xl font-black text-blue-600">📦 Mes Commandes</h1>
           <div className="flex flex-wrap gap-2 justify-center">
-            <button onClick={() => setCurrentPage('shop')} className="px-3 sm:px-4 py-2 bg-indigo-500 text-white rounded-xl text-sm sm:text-base font-semibold hover:bg-indigo-600 whitespace-nowrap">
+            <button onClick={() => setCurrentPage('shop')} className="px-4 py-3 bg-indigo-500 text-white rounded-xl font-semibold hover:bg-indigo-600 whitespace-nowrap">
               Boutique
             </button>
             {user?.isAdmin && (
-              <button onClick={() => setCurrentPage('admin')} className="px-3 sm:px-4 py-2 bg-purple-500 text-white rounded-xl text-sm sm:text-base font-semibold hover:bg-purple-600 whitespace-nowrap">
+              <button onClick={() => setCurrentPage('admin')} className="px-4 py-3 bg-purple-500 text-white rounded-xl font-semibold hover:bg-purple-600 whitespace-nowrap">
                 🔧 Admin
               </button>
             )}
-            <button onClick={handleLogout} className="px-3 sm:px-4 py-2 bg-red-500 text-white rounded-xl text-sm sm:text-base font-semibold hover:bg-red-600 whitespace-nowrap">
+            <button onClick={handleLogout} className="px-4 py-3 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 whitespace-nowrap">
               Déconnexion
             </button>
           </div>
