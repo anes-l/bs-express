@@ -75,11 +75,11 @@ export default function AdminOrders({
           
           <div 
             onClick={() => { setShowCancelledOnly(true); setShowCompletedOrders(false); }}
-            className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl p-8 shadow-lg cursor-pointer hover:shadow-2xl transition transform hover:scale-105"
+            className="bg-gradient-to-br from-red-500 to-red-600 text-white rounded-xl p-8 shadow-lg cursor-pointer hover:shadow-2xl transition transform hover:scale-105"
           >
-            <p className="text-sm mb-2 text-orange-100">Annulées</p>
+            <p className="text-sm mb-2 text-red-100">Annulées</p>
             <p className="text-5xl font-black">{orders.filter(o => o.status === 'Annulée').length}</p>
-            <p className="text-xs mt-2 text-orange-100">Cliquez pour voir →</p>
+            <p className="text-xs mt-2 text-red-100">Cliquez pour voir →</p>
           </div>
           
           <div 
@@ -127,7 +127,7 @@ export default function AdminOrders({
                     onChange={(e) => updateOrderStatus(order.id, e.target.value)}
                     className={`px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-bold border-2 outline-none cursor-pointer w-full sm:w-auto ${
                       order.status === 'Traitée' ? 'bg-green-100 text-green-700 border-green-300' : 
-                      order.status === 'Annulée' ? 'bg-orange-100 text-orange-700 border-orange-300' :
+                      order.status === 'Annulée' ? 'bg-red-100 text-red-700 border-red-300' :
                       'bg-blue-100 text-blue-700 border-blue-300'
                     }`}
                   >
