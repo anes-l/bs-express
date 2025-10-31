@@ -31,15 +31,17 @@ export default function AdminOrders({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow p-4 flex flex-col sm:flex-row justify-between items-center gap-3 sticky top-0 z-50">
-        <h1 className="text-xl sm:text-2xl font-black text-purple-600">🔧 Panel Admin</h1>
-        <div className="flex flex-wrap gap-2 justify-center">
-          <button onClick={() => setCurrentPage('shop')} className="px-4 py-3 bg-indigo-500 text-white rounded-xl font-semibold hover:bg-indigo-600 whitespace-nowrap">
-            Boutique
-          </button>
-          <button onClick={handleLogout} className="px-4 py-3 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 whitespace-nowrap">
-            Déconnexion
-          </button>
+      <div className="bg-white shadow sticky top-0 z-50">
+        <div className="flex justify-between items-center p-4">
+          <h1 className="text-xl font-black text-purple-600">🔧 Admin</h1>
+          <div className="flex gap-2">
+            <button onClick={() => setCurrentPage('shop')} className="w-11 h-11 bg-indigo-500 text-white rounded-xl flex items-center justify-center hover:bg-indigo-600">
+              🏪
+            </button>
+            <button onClick={handleLogout} className="w-11 h-11 bg-red-500 text-white rounded-xl flex items-center justify-center hover:bg-red-600">
+              ⏻
+            </button>
+          </div>
         </div>
       </div>
       
@@ -75,11 +77,11 @@ export default function AdminOrders({
           
           <div 
             onClick={() => { setShowCancelledOnly(true); setShowCompletedOrders(false); }}
-            className="bg-gradient-to-br from-red-500 to-red-600 text-white rounded-xl p-8 shadow-lg cursor-pointer hover:shadow-2xl transition transform hover:scale-105"
+            className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl p-8 shadow-lg cursor-pointer hover:shadow-2xl transition transform hover:scale-105"
           >
-            <p className="text-sm mb-2 text-red-100">Annulées</p>
+            <p className="text-sm mb-2 text-orange-100">Annulées</p>
             <p className="text-5xl font-black">{orders.filter(o => o.status === 'Annulée').length}</p>
-            <p className="text-xs mt-2 text-red-100">Cliquez pour voir →</p>
+            <p className="text-xs mt-2 text-orange-100">Cliquez pour voir →</p>
           </div>
           
           <div 
@@ -127,7 +129,7 @@ export default function AdminOrders({
                     onChange={(e) => updateOrderStatus(order.id, e.target.value)}
                     className={`px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-bold border-2 outline-none cursor-pointer w-full sm:w-auto ${
                       order.status === 'Traitée' ? 'bg-green-100 text-green-700 border-green-300' : 
-                      order.status === 'Annulée' ? 'bg-red-100 text-red-700 border-red-300' :
+                      order.status === 'Annulée' ? 'bg-orange-100 text-orange-700 border-orange-300' :
                       'bg-blue-100 text-blue-700 border-blue-300'
                     }`}
                   >

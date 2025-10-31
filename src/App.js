@@ -547,84 +547,89 @@ function App() {
       <>
         {renderToasts()}
         <div className="min-h-screen bg-gray-50">
-        <div className="bg-white shadow-lg p-4 sticky top-0 z-50">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
-            <h1 className="text-2xl font-black text-indigo-600">BS EXPRESS</h1>
-            <div className="flex flex-wrap gap-2 justify-center">
-              <button 
-                onClick={() => setCurrentPage('my-orders')} 
-                className="px-4 py-3 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition whitespace-nowrap"
-              >
-                📦 Commandes
-              </button>
+        <div className="bg-white shadow-lg sticky top-0 z-50">
+          <div className="flex justify-between items-center p-4">
+            <h1 className="text-xl font-black text-indigo-600">BS EXPRESS</h1>
+            <div className="flex gap-2">
+              {!user?.isAdmin && (
+                <button 
+                  onClick={() => setCurrentPage('my-orders')} 
+                  className="w-11 h-11 bg-blue-500 text-white rounded-xl flex items-center justify-center hover:bg-blue-600 transition"
+                >
+                  📦
+                </button>
+              )}
               {user?.isAdmin && (
                 <button 
                   onClick={() => setCurrentPage('admin')} 
-                  className="px-4 py-3 bg-purple-500 text-white rounded-xl font-semibold hover:bg-purple-600 transition whitespace-nowrap"
+                  className="w-11 h-11 bg-purple-500 text-white rounded-xl flex items-center justify-center hover:bg-purple-600 transition"
                 >
-                  🔧 Admin
+                  🔧
                 </button>
               )}
               <button 
                 onClick={handleLogout} 
-                className="px-4 py-3 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 transition whitespace-nowrap"
+                className="w-11 h-11 bg-red-500 text-white rounded-xl flex items-center justify-center hover:bg-red-600 transition"
               >
-                Déconnexion
+                ⏻
               </button>
             </div>
           </div>
           
-          <div className="mt-4 bg-indigo-100 rounded-xl p-3">
-            <div className="flex justify-between items-center mb-2">
-              <h2 className="font-bold">🛒 Panier ({getTotalItems()})</h2>
-              <div className="font-black text-indigo-600">{getTotalPrice()} DZD</div>
+          <div className="p-4 bg-indigo-100">
+            <div className="flex justify-between items-center mb-3">
+              <h2 className="font-bold text-lg">🛒 Panier ({getTotalItems()})</h2>
+              <div className="font-black text-indigo-600 text-xl">{getTotalPrice()} DZD</div>
             </div>
             {cart.length > 0 && (
               <div>
-                <div className="space-y-2 mb-2 max-h-40 overflow-y-auto">
+                <div className="space-y-2 mb-3 max-h-48 overflow-y-auto">
                   {cart.map(item => (
-                    <div key={item.id} className="flex justify-between items-center bg-white rounded p-2 text-sm">
-                      <div className="flex items-center gap-2">
-                        <img src={item.image} alt={item.name} className="w-10 h-10 rounded object-cover" />
-                        <span className="font-semibold">{item.name} x{item.quantity}</span>
+                    <div key={item.id} className="flex justify-between items-center bg-white rounded-xl p-3 shadow">
+                      <div className="flex items-center gap-3">
+                        <img src={item.image} alt={item.name} className="w-12 h-12 rounded-lg object-cover" />
+                        <div>
+                          <p className="font-semibold text-sm">{item.name}</p>
+                          <p className="text-xs text-gray-500">x{item.quantity}</p>
+                        </div>
                       </div>
-                      <div className="flex gap-2">
-                        <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="px-2 bg-gray-200 rounded font-bold hover:bg-gray-300">−</button>
-                        <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="px-2 bg-gray-200 rounded font-bold hover:bg-gray-300">+</button>
+                      <div className="flex gap-1">
+                        <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="w-8 h-8 bg-gray-200 rounded-lg font-bold hover:bg-gray-300 flex items-center justify-center">−</button>
+                        <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="w-8 h-8 bg-gray-200 rounded-lg font-bold hover:bg-gray-300 flex items-center justify-center">+</button>
                       </div>
                     </div>
                   ))}
                 </div>
-                <button onClick={() => setCurrentPage('checkout')} className="w-full bg-green-500 text-white py-2 rounded font-bold hover:bg-green-600 transition">
-                  💳 Acheter
+                <button onClick={() => setCurrentPage('checkout')} className="w-full bg-green-500 text-white py-4 rounded-xl font-bold text-lg hover:bg-green-600 transition shadow-lg">
+                  💳 Passer commande
                 </button>
               </div>
             )}
           </div>
         </div>
 
-        <div className="p-6">
-          <div className="mb-6 bg-indigo-600 text-white p-4 rounded-xl">
-            <p className="font-bold">👋 Bienvenue, {user?.name}!</p>
-            <p className="text-sm text-indigo-200">{user?.isAdmin ? 'Compte Administrateur' : 'Compte Client'}</p>
+        <div className="p-4">
+          <div className="mb-6 bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-5 rounded-2xl shadow-lg">
+            <p className="font-bold text-lg">👋 Bienvenue, {user?.name}!</p>
+            <p className="text-sm text-indigo-100 mt-1">{user?.isAdmin ? 'Compte Administrateur' : 'Compte Client'}</p>
           </div>
           
-          <h2 className="text-3xl font-black mb-6">Nos Produits</h2>
+          <h2 className="text-2xl font-black mb-4">🛍️ Nos Produits</h2>
           {products.length === 0 ? (
-            <div className="bg-white rounded-xl p-12 text-center shadow-lg">
+            <div className="bg-white rounded-2xl p-12 text-center shadow-lg">
               <div className="text-6xl mb-4">📦</div>
-              <p className="text-gray-500 font-bold text-xl">Aucun produit disponible</p>
+              <p className="text-gray-500 font-bold text-lg">Aucun produit disponible</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 gap-3">
               {products.map(product => (
-                <div key={product.id} className="bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer hover:shadow-2xl transition" onClick={() => addToCart(product)}>
-                  <img src={product.image} alt={product.name} className="w-full h-64 object-cover" />
-                  <div className="p-5">
-                    <h3 className="font-bold text-lg mb-2">{product.name}</h3>
+                <div key={product.id} className="bg-white rounded-2xl shadow-lg overflow-hidden active:scale-95 transition" onClick={() => addToCart(product)}>
+                  <img src={product.image} alt={product.name} className="w-full h-40 object-cover" />
+                  <div className="p-3">
+                    <h3 className="font-bold text-sm mb-2 line-clamp-2">{product.name}</h3>
                     <div className="flex justify-between items-center">
-                      <p className="text-2xl font-black text-indigo-600">{product.price} DZD</p>
-                      <button className="bg-indigo-600 text-white p-2 rounded-lg hover:bg-indigo-700 transition">+</button>
+                      <p className="text-lg font-black text-indigo-600">{product.price} DZD</p>
+                      <button className="w-9 h-9 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition flex items-center justify-center text-xl">+</button>
                     </div>
                   </div>
                 </div>
@@ -721,31 +726,33 @@ function App() {
       <>
         {renderToasts()}
         <div className="min-h-screen bg-gray-50">
-        <div className="bg-white shadow p-4 flex flex-col sm:flex-row justify-between items-center gap-3 sticky top-0 z-50">
-          <h1 className="text-xl sm:text-2xl font-black text-blue-600">📦 Mes Commandes</h1>
-          <div className="flex flex-wrap gap-2 justify-center">
-            <button onClick={() => setCurrentPage('shop')} className="px-4 py-3 bg-indigo-500 text-white rounded-xl font-semibold hover:bg-indigo-600 whitespace-nowrap">
-              Boutique
-            </button>
-            {user?.isAdmin && (
-              <button onClick={() => setCurrentPage('admin')} className="px-4 py-3 bg-purple-500 text-white rounded-xl font-semibold hover:bg-purple-600 whitespace-nowrap">
-                🔧 Admin
+        <div className="bg-white shadow sticky top-0 z-50">
+          <div className="flex justify-between items-center p-4">
+            <h1 className="text-xl font-black text-blue-600">📦 Commandes</h1>
+            <div className="flex gap-2">
+              <button onClick={() => setCurrentPage('shop')} className="w-11 h-11 bg-indigo-500 text-white rounded-xl flex items-center justify-center hover:bg-indigo-600">
+                🏪
               </button>
-            )}
-            <button onClick={handleLogout} className="px-4 py-3 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 whitespace-nowrap">
-              Déconnexion
-            </button>
+              {user?.isAdmin && (
+                <button onClick={() => setCurrentPage('admin')} className="w-11 h-11 bg-purple-500 text-white rounded-xl flex items-center justify-center hover:bg-purple-600">
+                  🔧
+                </button>
+              )}
+              <button onClick={handleLogout} className="w-11 h-11 bg-red-500 text-white rounded-xl flex items-center justify-center hover:bg-red-600">
+                ⏻
+              </button>
+            </div>
           </div>
         </div>
         
-        <div className="p-8">
+        <div className="p-4">
           {userOrders.length === 0 ? (
-            <div className="bg-white rounded-xl p-12 text-center shadow-lg">
+            <div className="bg-white rounded-2xl p-12 text-center shadow-lg mt-8">
               <div className="text-6xl mb-4">📦</div>
-              <p className="text-gray-500 font-bold text-xl">Aucune commande pour le moment</p>
+              <p className="text-gray-500 font-bold text-lg mb-4">Aucune commande</p>
               <button 
                 onClick={() => setCurrentPage('shop')} 
-                className="mt-6 px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700"
+                className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700"
               >
                 Commencer vos achats
               </button>
@@ -753,32 +760,32 @@ function App() {
           ) : (
             <div className="space-y-4">
               {userOrders.map(order => (
-                <div key={order.id} className="bg-white rounded-xl p-6 shadow-lg border-2 border-blue-100">
-                  <div className="flex justify-between items-start mb-4">
+                <div key={order.id} className="bg-white rounded-2xl p-4 shadow-lg border-2 border-blue-100">
+                  <div className="flex justify-between items-start mb-3">
                     <div>
-                      <h3 className="font-black text-xl">{order.orderNumber}</h3>
-                      <p className="text-sm text-gray-600">{order.date} à {order.time}</p>
+                      <h3 className="font-black text-lg">{order.orderNumber}</h3>
+                      <p className="text-xs text-gray-600">{order.date} · {order.time}</p>
                     </div>
-                    <span className={`px-4 py-2 rounded-full text-sm font-bold ${order.status === 'Traitée' ? 'bg-green-100 text-green-700' : order.status === 'En cours' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'}`}>
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${order.status === 'Traitée' ? 'bg-green-100 text-green-700' : order.status === 'En cours' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'}`}>
                       {order.status}
                     </span>
                   </div>
-                  <div className="bg-blue-50 rounded-xl p-4 mb-4">
-                    <p className="font-bold text-lg">👤 {order.clientName}</p>
-                    <p className="text-sm text-blue-600 font-semibold">📞 {order.clientPhone}</p>
-                    <p className="text-sm text-blue-600">📍 {order.clientAddress}</p>
+                  <div className="bg-blue-50 rounded-xl p-3 mb-3">
+                    <p className="font-bold">👤 {order.clientName}</p>
+                    <p className="text-xs text-blue-600 font-semibold">📞 {order.clientPhone}</p>
+                    <p className="text-xs text-blue-600">📍 {order.clientAddress}</p>
                   </div>
-                  <div className="space-y-2 mb-4">
+                  <div className="space-y-2 mb-3">
                     {order.items.map(item => (
-                      <div key={item.id} className="flex justify-between text-sm bg-gray-50 p-2 rounded">
+                      <div key={item.id} className="flex justify-between text-sm bg-gray-50 p-2 rounded-lg">
                         <span>{item.name} x{item.quantity}</span>
                         <span className="font-bold">{item.price * item.quantity} DZD</span>
                       </div>
                     ))}
                   </div>
-                  <div className="border-t-2 border-blue-200 mt-4 pt-4 flex justify-between items-center">
-                    <span className="font-black text-lg">Total</span>
-                    <span className="font-black text-2xl text-blue-600">{order.total} DZD</span>
+                  <div className="border-t-2 border-blue-200 pt-3 flex justify-between items-center">
+                    <span className="font-black">Total</span>
+                    <span className="font-black text-xl text-blue-600">{order.total} DZD</span>
                   </div>
                 </div>
               ))}
