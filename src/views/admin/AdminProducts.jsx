@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, Edit2, Trash2, X } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Ban, Edit, Save, ShoppingBag, Store, Power, Package, Users } from 'lucide-react';
 
 export default function AdminProducts({
   user,
@@ -19,7 +19,7 @@ export default function AdminProducts({
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl p-12 shadow-lg text-center">
-          <div className="text-6xl mb-4">🚫</div>
+          <div className="text-6xl mb-4"><Ban size={64} /></div>
           <h2 className="text-2xl font-black mb-4">Accès refusé</h2>
           <p className="text-gray-600 mb-6">Vous n'avez pas les permissions d'accéder à cette page.</p>
           <button 
@@ -40,7 +40,7 @@ export default function AdminProducts({
           <div className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl my-8">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-black text-purple-600">
-                {editingProduct ? '✏️ Modifier' : '➕ Ajouter'}
+                {editingProduct ? <><Edit size={20} className="inline-block mr-2" /> Modifier</> : <><Plus size={20} className="inline-block mr-2" /> Ajouter</>}
               </h2>
               <button onClick={closeProductModal} className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition">
                 <X size={24} />
@@ -95,7 +95,7 @@ export default function AdminProducts({
                 onClick={handleSaveProduct}
                 className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl font-bold hover:shadow-lg transition"
               >
-                {editingProduct ? '💾 Enregistrer' : '➕ Ajouter'}
+                {editingProduct ? <><Save size={20} className="inline-block mr-2" /> Enregistrer</> : <><Plus size={20} className="inline-block mr-2" /> Ajouter</>}
               </button>
               <button
                 onClick={closeProductModal}
@@ -110,13 +110,13 @@ export default function AdminProducts({
 
       <div className="bg-white shadow sticky top-0 z-40">
         <div className="flex justify-between items-center p-4">
-          <h1 className="text-xl font-black text-purple-600">🛍️ Produits</h1>
+          <h1 className="text-xl font-black text-purple-600"><ShoppingBag size={24} className="inline-block mr-2" /> Produits</h1>
           <div className="flex gap-2">
             <button onClick={() => setCurrentPage('shop')} className="w-11 h-11 bg-indigo-500 text-white rounded-xl flex items-center justify-center hover:bg-indigo-600">
-              🏪
+              <Store size={24} />
             </button>
             <button onClick={handleLogout} className="w-11 h-11 bg-red-500 text-white rounded-xl flex items-center justify-center hover:bg-red-600">
-              ⏻
+              <Power size={24} />
             </button>
           </div>
         </div>
@@ -128,21 +128,21 @@ export default function AdminProducts({
             onClick={() => setCurrentPage('admin')} 
             className="px-5 py-3 bg-white text-gray-700 rounded-xl font-bold hover:bg-gray-50 whitespace-nowrap shadow"
           >
-            📦 Commandes
+            <Package size={20} className="inline-block mr-2" /> Commandes
           </button>
           <button className="px-5 py-3 bg-purple-600 text-white rounded-xl font-bold whitespace-nowrap shadow-lg">
-            🛍️ Produits
+            <ShoppingBag size={20} className="inline-block mr-2" /> Produits
           </button>
           <button 
             onClick={() => setCurrentPage('admin-accounts')} 
             className="px-5 py-3 bg-white text-gray-700 rounded-xl font-bold hover:bg-gray-50 whitespace-nowrap shadow"
           >
-            👥 Comptes
+            <Users size={20} className="inline-block mr-2" /> Comptes
           </button>
         </div>
 
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-black">📦 {products.length} produits</h2>
+          <h2 className="text-xl font-black"><Package size={24} className="inline-block mr-2" /> {products.length} produits</h2>
           <button 
             onClick={() => openProductModal()}
             className="w-12 h-12 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl flex items-center justify-center hover:shadow-lg transition active:scale-95"
@@ -153,7 +153,7 @@ export default function AdminProducts({
 
         {products.length === 0 ? (
           <div className="bg-white rounded-2xl p-12 text-center shadow-lg">
-            <div className="text-6xl mb-4">📦</div>
+            <div className="text-6xl mb-4"><Package size={64} /></div>
             <p className="text-gray-500 font-bold text-lg mb-4">Aucun produit</p>
             <button 
               onClick={() => openProductModal()}

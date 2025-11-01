@@ -1,4 +1,5 @@
 import React from 'react';
+import { Ban, Wrench, Store, Power, Package, ShoppingBag, Users, X, Check, User, Phone, MapPin } from 'lucide-react';
 
 export default function AdminOrders({
   user,
@@ -15,7 +16,7 @@ export default function AdminOrders({
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="bg-white rounded-xl p-12 shadow-lg text-center">
-          <div className="text-6xl mb-4">🚫</div>
+          <div className="text-6xl mb-4"><Ban size={64} /></div>
           <h2 className="text-2xl font-black mb-4">Accès refusé</h2>
           <p className="text-gray-600 mb-6">Vous n'avez pas les permissions d'accéder à cette page.</p>
           <button 
@@ -33,13 +34,13 @@ export default function AdminOrders({
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white shadow sticky top-0 z-50">
         <div className="flex justify-between items-center p-4">
-          <h1 className="text-xl font-black text-purple-600">🔧 Admin</h1>
+          <h1 className="text-xl font-black text-purple-600"><Wrench size={24} className="inline-block mr-2" /> Admin</h1>
           <div className="flex gap-2">
             <button onClick={() => setCurrentPage('shop')} className="w-11 h-11 bg-indigo-500 text-white rounded-xl flex items-center justify-center hover:bg-indigo-600">
-              🏪
+              <Store size={24} />
             </button>
             <button onClick={handleLogout} className="w-11 h-11 bg-red-500 text-white rounded-xl flex items-center justify-center hover:bg-red-600">
-              ⏻
+              <Power size={24} />
             </button>
           </div>
         </div>
@@ -48,19 +49,19 @@ export default function AdminOrders({
       <div className="p-4">
         <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
           <button className="px-5 py-3 bg-purple-600 text-white rounded-xl font-bold whitespace-nowrap shadow-lg">
-            📦 Commandes
+            <Package size={20} className="inline-block mr-2" /> Commandes
           </button>
           <button 
             onClick={() => setCurrentPage('admin-products')} 
             className="px-5 py-3 bg-white text-gray-700 rounded-xl font-bold hover:bg-gray-50 whitespace-nowrap shadow"
           >
-            🛍️ Produits
+            <ShoppingBag size={20} className="inline-block mr-2" /> Produits
           </button>
           <button 
             onClick={() => setCurrentPage('admin-accounts')} 
             className="px-5 py-3 bg-white text-gray-700 rounded-xl font-bold hover:bg-gray-50 whitespace-nowrap shadow"
           >
-            👥 Comptes
+            <Users size={20} className="inline-block mr-2" /> Comptes
           </button>
         </div>
 
@@ -91,7 +92,7 @@ export default function AdminOrders({
         </div>
         
         <h2 className="text-xl font-black mb-4">
-          {showCancelledOnly ? '❌ Annulées' : showCompletedOrders ? '✅ Traitées' : '📦 En Cours'}
+          {showCancelledOnly ? <><X size={24} className="inline-block mr-2" /> Annulées</> : showCompletedOrders ? <><Check size={24} className="inline-block mr-2" /> Traitées</> : <><Package size={24} className="inline-block mr-2" /> En Cours</>}
         </h2>
 
         {orders.filter(o => {
@@ -100,7 +101,7 @@ export default function AdminOrders({
           return o.status === 'En cours' || o.status === 'En attente';
         }).length === 0 ? (
           <div className="bg-white rounded-2xl p-12 text-center shadow-lg">
-            <div className="text-6xl mb-4">📦</div>
+            <div className="text-6xl mb-4"><Package size={64} /></div>
             <p className="text-gray-500 font-bold text-lg">
               {showCancelledOnly ? 'Aucune annulée' : showCompletedOrders ? 'Aucune traitée' : 'Aucune en cours'}
             </p>
@@ -134,9 +135,9 @@ export default function AdminOrders({
                 </div>
                 
                 <div className="bg-purple-50 rounded-xl p-3 mb-3">
-                  <p className="font-bold">👤 {order.clientName}</p>
-                  <p className="text-xs text-purple-600 font-semibold">📞 {order.clientPhone}</p>
-                  <p className="text-xs text-purple-600 truncate">📍 {order.clientAddress}</p>
+                  <p className="font-bold"><User size={16} className="inline-block mr-2" /> {order.clientName}</p>
+                  <p className="text-xs text-purple-600 font-semibold"><Phone size={16} className="inline-block mr-2" /> {order.clientPhone}</p>
+                  <p className="text-xs text-purple-600 truncate"><MapPin size={16} className="inline-block mr-2" /> {order.clientAddress}</p>
                 </div>
                 
                 <div className="space-y-2 mb-3">

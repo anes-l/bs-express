@@ -61,7 +61,7 @@ function App() {
   // Écouter les changements d'authentification Firebase
   React.useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      console.log('🔐 État auth changé:', firebaseUser?.uid);
+      console.log('État auth changé:', firebaseUser?.uid);
       
       if (firebaseUser) {
         setFirebaseUser(firebaseUser);
@@ -71,18 +71,18 @@ function App() {
           if (userDoc.exists()) {
             const userData = { id: userDoc.id, ...userDoc.data() };
             setUser(userData);
-            console.log('✅ Utilisateur chargé:', userData);
+            console.log('Utilisateur chargé:', userData);
             
             if (currentPage === 'login') {
               setCurrentPage('shop');
             }
           } else {
-            console.log('❌ Pas de données utilisateur dans Firestore');
+            console.log('Pas de données utilisateur dans Firestore');
             setUser(null);
             setCurrentPage('login');
           }
         } catch (error) {
-          console.error('❌ Erreur chargement user:', error);
+          console.error('Erreur chargement user:', error);
         }
       } else {
         setFirebaseUser(null);
@@ -99,36 +99,36 @@ function App() {
   const loadOrders = React.useCallback(async () => {
     try {
       const snapshot = await getDocs(collection(db, "orders"));
-      console.log(`✅ ${snapshot.size} commandes trouvées.`);
+      console.log(`${snapshot.size} commandes trouvées.`);
       const firebaseOrders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setOrders(firebaseOrders.reverse());
     } catch (error) {
-      console.error('❌ Erreur chargement commandes:', error);
+      console.error('Erreur chargement commandes:', error);
     }
   }, []);
 
   const loadProducts = React.useCallback(async () => {
     try {
-      console.log('🔍 Tentative de chargement des produits...');
+      console.log('Tentative de chargement des produits...');
       const snapshot = await getDocs(collection(db, "products"));
-      console.log(`✅ ${snapshot.size} produits trouvés.`);
+      console.log(`${snapshot.size} produits trouvés.`);
       const firebaseProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setProducts(firebaseProducts);
     } catch (error) {
-      console.error('❌ Erreur chargement produits:', error);
+      console.error('Erreur chargement produits:', error);
       setProducts([]);
     }
   }, []);
 
   const loadAccounts = React.useCallback(async () => {
     try {
-      console.log('🔍 Tentative de chargement des comptes...');
+      console.log('Tentative de chargement des comptes...');
       const snapshot = await getDocs(collection(db, "accounts"));
-      console.log(`✅ ${snapshot.size} comptes trouvés dans Firebase.`);
+      console.log(`${snapshot.size} comptes trouvés dans Firebase.`);
       const firebaseAccounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setAccounts(firebaseAccounts);
     } catch (error) {
-      console.error('❌ Erreur chargement comptes:', error);
+      console.error('Erreur chargement comptes:', error);
       setAccounts([]);
     }
   }, []);
@@ -150,13 +150,13 @@ function App() {
 
     setLoading(true);
     try {
-      console.log('🔐 Tentative de connexion:', loginEmail);
+      console.log('Tentative de connexion:', loginEmail);
       await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
       setLoginEmail('');
       setLoginPassword('');
       showToast('success', 'Connexion réussie !');
     } catch (error) {
-      console.error('❌ Erreur connexion:', error);
+      console.error('Erreur connexion:', error);
       if (error.code === 'auth/invalid-credential') {
         showToast('error', 'Email ou mot de passe incorrect');
       } else if (error.code === 'auth/user-not-found') {
@@ -179,7 +179,7 @@ function App() {
       setCurrentPage('login');
       showToast('success', 'Déconnexion réussie');
     } catch (error) {
-      console.error('❌ Erreur déconnexion:', error);
+      console.error('Erreur déconnexion:', error);
       showToast('error', 'Erreur lors de la déconnexion');
     }
   };
@@ -228,7 +228,7 @@ function App() {
       await loadProducts();
       closeProductModal();
     } catch (error) {
-      console.error('❌ Erreur sauvegarde produit:', error);
+      console.error('Erreur sauvegarde produit:', error);
       showToast('error', 'Erreur: ' + error.message);
     }
   };
@@ -243,7 +243,7 @@ function App() {
       showToast('success', 'Produit supprimé avec succès !');
       await loadProducts();
     } catch (error) {
-      console.error('❌ Erreur suppression produit:', error);
+      console.error('Erreur suppression produit:', error);
       showToast('error', 'Erreur: ' + error.message);
     }
   };
@@ -315,7 +315,7 @@ function App() {
       await loadAccounts();
       closeAccountModal();
     } catch (error) {
-      console.error('❌ Erreur sauvegarde compte:', error);
+      console.error('Erreur sauvegarde compte:', error);
       if (error.code === 'auth/email-already-in-use') {
         showToast('error', 'Cet email est déjà utilisé !');
       } else if (error.code === 'auth/weak-password') {
@@ -336,7 +336,7 @@ function App() {
       showToast('success', 'Compte supprimé avec succès !');
       await loadAccounts();
     } catch (error) {
-      console.error('❌ Erreur suppression compte:', error);
+      console.error('Erreur suppression compte:', error);
       showToast('error', 'Erreur: ' + error.message);
     }
   };
@@ -460,7 +460,7 @@ function App() {
       setCurrentPage('my-orders');
       await loadOrders(); 
     } catch (error) {
-      console.error('❌ Erreur lors de la sauvegarde Firebase:', error);
+      console.error('Erreur lors de la sauvegarde Firebase:', error);
       showToast('error', 'Erreur lors de la commande: ' + error.message);
     }
   };
@@ -480,7 +480,7 @@ function App() {
       const orderRef = doc(db, "orders", orderId);
       await updateDoc(orderRef, { status: newStatus });
     } catch (error) {
-      console.error("❌ Erreur de mise à jour Firebase:", error);
+      console.error("Erreur de mise à jour Firebase:", error);
       showToast('error', 'Erreur lors de la mise à jour: ' + error.message);
       await loadOrders(); 
     }

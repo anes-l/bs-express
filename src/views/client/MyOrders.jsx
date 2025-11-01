@@ -1,4 +1,5 @@
 import React from 'react';
+import { Package, Store, Wrench, Power, User, Phone, MapPin } from 'lucide-react';
 
 export default function MyOrders({
   user,
@@ -16,18 +17,18 @@ export default function MyOrders({
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow sticky top-0 z-50">
           <div className="flex justify-between items-center p-4">
-            <h1 className="text-xl font-black text-blue-600">📦 Commandes</h1>
+            <h1 className="text-xl font-black text-blue-600"><Package size={24} className="inline-block mr-2" /> Commandes</h1>
             <div className="flex gap-2">
               <button onClick={() => setCurrentPage('shop')} className="w-11 h-11 bg-indigo-500 text-white rounded-xl flex items-center justify-center hover:bg-indigo-600">
-                🏪
+                <Store size={24} />
               </button>
               {user?.isAdmin && (
                 <button onClick={() => setCurrentPage('admin')} className="w-11 h-11 bg-purple-500 text-white rounded-xl flex items-center justify-center hover:bg-purple-600">
-                  🔧
+                  <Wrench size={24} />
                 </button>
               )}
               <button onClick={handleLogout} className="w-11 h-11 bg-red-500 text-white rounded-xl flex items-center justify-center hover:bg-red-600">
-                ⏻
+                <Power size={24} />
               </button>
             </div>
           </div>
@@ -36,7 +37,7 @@ export default function MyOrders({
         <div className="p-4">
           {userOrders.length === 0 ? (
             <div className="bg-white rounded-2xl p-12 text-center shadow-lg mt-8">
-              <div className="text-6xl mb-4">📦</div>
+              <div className="text-6xl mb-4"><Package size={64} /></div>
               <p className="text-gray-500 font-bold text-lg mb-4">Aucune commande</p>
               <button
                 onClick={() => setCurrentPage('shop')}
@@ -59,9 +60,9 @@ export default function MyOrders({
                     </span>
                   </div>
                   <div className="bg-blue-50 rounded-xl p-3 mb-3">
-                    <p className="font-bold">👤 {order.clientName}</p>
-                    <p className="text-xs text-blue-600 font-semibold">📞 {order.clientPhone}</p>
-                    <p className="text-xs text-blue-600">📍 {order.clientAddress}</p>
+                    <p className="font-bold"><User size={16} className="inline-block mr-2" /> {order.clientName}</p>
+                    <p className="text-xs text-blue-600 font-semibold"><Phone size={16} className="inline-block mr-2" /> {order.clientPhone}</p>
+                    <p className="text-xs text-blue-600"><MapPin size={16} className="inline-block mr-2" /> {order.clientAddress}</p>
                   </div>
                   <div className="space-y-2 mb-3">
                     {order.items.map(item => (
