@@ -163,28 +163,31 @@ export default function AdminProducts({
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-3">
             {products.map(product => (
-              <div key={product.id} className="bg-white rounded-2xl shadow-lg overflow-hidden border-2 border-purple-100">
-                <img src={product.image} alt={product.name} className="w-full h-40 object-cover" />
-                <div className="p-3">
-                  <h3 className="font-bold text-sm mb-1 line-clamp-2 min-h-[2.5rem]">{product.name}</h3>
-                  <p className="text-lg font-black text-purple-600 mb-3">{product.price} DZD</p>
-                  
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => openProductModal(product)}
-                      className="flex-1 flex items-center justify-center gap-1 py-2 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition text-xs active:scale-95"
-                    >
-                      <Edit2 size={14} />
-                      Modifier
-                    </button>
-                    <button
-                      onClick={() => handleDeleteProduct(product.id)}
-                      className="w-10 h-10 flex items-center justify-center bg-red-500 text-white rounded-lg hover:bg-red-600 transition active:scale-95"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+              <div key={product.id} className="bg-white rounded-2xl shadow-lg border-2 border-purple-100 p-4">
+                <div className="flex gap-4">
+                  <img src={product.image} alt={product.name} className="w-24 h-24 rounded-xl object-cover flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-lg mb-1 line-clamp-2">{product.name}</h3>
+                    <p className="text-2xl font-black text-purple-600 mb-3">{product.price} DZD</p>
+                    
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => openProductModal(product)}
+                        className="flex-1 flex items-center justify-center gap-2 py-2 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition text-sm active:scale-95"
+                      >
+                        <Edit2 size={16} />
+                        Modifier
+                      </button>
+                      <button
+                        onClick={() => handleDeleteProduct(product.id)}
+                        className="flex-1 flex items-center justify-center gap-2 py-2 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 transition text-sm active:scale-95"
+                      >
+                        <Trash2 size={16} />
+                        Supprimer
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
