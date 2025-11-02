@@ -110,7 +110,7 @@ export default function AdminProducts({
 
       <div className="bg-white shadow sticky top-0 z-40">
         <div className="flex justify-between items-center p-4">
-          <h1 className="text-xl font-black text-purple-600"><ShoppingBag size={24} className="inline-block mr-2" /> Produits</h1>
+          <img src="/logo.png" alt="BS EXPRESS" className="h-12" />
           <div className="flex gap-2">
             <button onClick={() => setCurrentPage('shop')} className="w-11 h-11 bg-indigo-500 text-white rounded-xl flex items-center justify-center hover:bg-indigo-600">
               <Store size={24} />

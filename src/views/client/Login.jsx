@@ -15,7 +15,7 @@ export default function Login({
       <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center p-4">
         <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 mb-2">BS EXPRESS</h1>
+            <img src="/logo.png" alt="BS EXPRESS" className="h-16 mx-auto mb-2" />
             <p className="text-gray-500">Accédez à votre boutique</p>
           </div>
           <div className="space-y-4">

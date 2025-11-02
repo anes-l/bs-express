@@ -19,7 +19,7 @@ export default function Shop({
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow-lg sticky top-0 z-50 rounded-t-2xl">
           <div className="flex justify-between items-center p-4">
-            <h1 className="text-xl font-black text-indigo-600">BS EXPRESS</h1>
+            <img src="/logo.png" alt="BS EXPRESS" className="h-12" />
             <div className="flex gap-2">
               {!user?.isAdmin && (
                 <button

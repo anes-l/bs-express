@@ -20,7 +20,7 @@ export default function Checkout({
       <div className="min-h-screen bg-gray-50 p-8">
         <div className="max-w-4xl mx-auto bg-white rounded-xl p-8 shadow-lg">
           <button onClick={() => setCurrentPage('shop')} className="mb-6 text-indigo-600 font-bold hover:text-indigo-800"><ArrowLeft size={20} className="inline-block mr-2" /> Retour</button>
-          <h1 className="text-3xl font-black mb-6 text-indigo-600">Finaliser la commande</h1>
+          <img src="/logo.png" alt="BS EXPRESS" className="h-12 mb-6" />
           <div className="grid md:grid-cols-2 gap-8">
             <div className="space-y-4">
               <div>

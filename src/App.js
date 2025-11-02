@@ -365,12 +365,21 @@ function App() {
   const getTotalPrice = () => cart.reduce((total, item) => total + (item.price * item.quantity), 0);
   const getTotalItems = () => cart.reduce((total, item) => total + item.quantity, 0);
 
-  const generateInvoice = () => {
+  const generateInvoice = async () => {
     const pdfDoc = new jsPDF();
     
-    pdfDoc.setFontSize(24);
-    pdfDoc.setTextColor(99, 102, 241);
-    pdfDoc.text('BS EXPRESS', 105, 20, { align: 'center' });
+    const addImageToPdf = () => {
+      return new Promise((resolve) => {
+        const logo = new Image();
+        logo.src = '/logo.png';
+        logo.onload = () => {
+          pdfDoc.addImage(logo, 'PNG', 85, 5, 50, 25);
+          resolve();
+        };
+      });
+    };
+
+    await addImageToPdf();
     
     pdfDoc.setFontSize(14);
     pdfDoc.setTextColor(0, 0, 0);

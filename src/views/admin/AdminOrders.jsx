@@ -34,7 +34,7 @@ export default function AdminOrders({
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white shadow sticky top-0 z-50">
         <div className="flex justify-between items-center p-4">
-          <h1 className="text-xl font-black text-purple-600"><Wrench size={24} className="inline-block mr-2" /> Admin</h1>
+          <img src="/logo.png" alt="BS EXPRESS" className="h-12" />
           <div className="flex gap-2">
             <button onClick={() => setCurrentPage('shop')} className="w-11 h-11 bg-indigo-500 text-white rounded-xl flex items-center justify-center hover:bg-indigo-600">
               <Store size={24} />
