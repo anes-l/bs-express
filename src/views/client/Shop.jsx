@@ -24,7 +24,7 @@ export default function Shop({
               {!user?.isAdmin && (
                 <button
                   onClick={() => setCurrentPage('my-orders')}
-                  className="w-11 h-11 bg-blue-500 text-white rounded-xl flex items-center justify-center hover:bg-blue-600 transition"
+                  className="w-11 h-11 bg-[#006b9c] text-white rounded-xl flex items-center justify-center hover:bg-[#005b85] transition"
                 >
                   <Package size={24} />
                 </button>
@@ -32,24 +32,24 @@ export default function Shop({
               {user?.isAdmin && (
                 <button
                   onClick={() => setCurrentPage('admin')}
-                  className="w-11 h-11 bg-purple-500 text-white rounded-xl flex items-center justify-center hover:bg-purple-600 transition"
+                  className="w-11 h-11 bg-[#e89b2b] text-white rounded-xl flex items-center justify-center hover:bg-[#efa12f] transition"
                 >
                   <Wrench size={24} />
                 </button>
               )}
               <button
                 onClick={handleLogout}
-                className="w-11 h-11 bg-red-500 text-white rounded-xl flex items-center justify-center hover:bg-red-600 transition"
+                className="w-11 h-11 bg-[#e0161e] text-white rounded-xl flex items-center justify-center hover:bg-[#c40712] transition"
               >
                 <Power size={24} />
               </button>
             </div>
           </div>
 
-          <div className="p-4 bg-indigo-100 rounded-t-2xl">
+          <div className="p-4 bg-[#e89b2b66] rounded-t-2xl">
             <div className="flex justify-between items-center mb-3">
               <h2 className="font-bold text-lg"><ShoppingCart size={24} className="inline-block mr-2" /> Panier ({getTotalItems()})</h2>
-              <div className="font-black text-indigo-600 text-xl">{getTotalPrice()} DZD</div>
+              <div className="font-black text-[#002f45] text-xl">{getTotalPrice()} DZD</div>
             </div>
             {cart.length > 0 && (
               <div>
@@ -79,9 +79,9 @@ export default function Shop({
         </div>
 
         <div className="p-4">
-          <div className="mb-6 bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-5 rounded-2xl shadow-lg">
+          <div className="mb-6 bg-gradient-to-r from-[#002f45] to-[#002f45] text-white p-5 rounded-2xl shadow-lg">
             <p className="font-bold text-lg"><Hand size={24} className="inline-block mr-2" /> Bienvenue, {user?.name}!</p>
-            <p className="text-sm text-indigo-100 mt-1">{user?.isAdmin ? 'Compte Administrateur' : 'Compte Client'}</p>
+            <p className="text-sm text-white mt-1">{user?.isAdmin ? 'Compte Administrateur' : 'Compte Client'}</p>
           </div>
 
           <h2 className="text-2xl font-black mb-4"><ShoppingBag size={32} className="inline-block mr-2" /> Nos Produits</h2>
@@ -98,8 +98,8 @@ export default function Shop({
                   <div className="p-3">
                     <h3 className="font-bold text-sm mb-2 line-clamp-2">{product.name}</h3>
                     <div className="flex justify-between items-center">
-                      <p className="text-lg font-black text-indigo-600">{product.price} DZD</p>
-                      <button className="w-9 h-9 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition flex items-center justify-center text-xl">+</button>
+                      <p className="text-lg font-black text-[#002f45]">{product.price} DZD</p>
+                      <button className="w-9 h-9 bg-[#002f45] text-white rounded-lg hover:bg-[#002f45] transition flex items-center justify-center text-xl">+</button>
                     </div>
                   </div>
                 </div>
