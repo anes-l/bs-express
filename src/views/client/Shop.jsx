@@ -32,7 +32,7 @@ export default function Shop({
               {user?.isAdmin && (
                 <button
                   onClick={() => setCurrentPage('admin')}
-                  className="w-11 h-11 bg-[#e89b2b] text-white rounded-xl flex items-center justify-center hover:bg-[#efa12f] transition"
+                  className="w-11 h-11 bg-[#e89b2b] text-white rounded-xl flex items-center justify-center hover:bg-[#cf8726] transition"
                 >
                   <Wrench size={24} />
                 </button>
@@ -55,7 +55,7 @@ export default function Shop({
               <div>
                 <div className="space-y-2 mb-3 max-h-48 overflow-y-auto">
                   {cart.map(item => (
-                    <div key={item.id} className="flex justify-between items-center bg-white rounded-xl p-3 shadow">
+                    <div key={item.id} className="flex justify-between items-center bg-[#F9FAFB] rounded-xl p-3 shadow">
                       <div className="flex items-center gap-3">
                         <img src={item.image} alt={item.name} className="w-12 h-12 rounded-lg object-cover" />
                         <div>
@@ -64,13 +64,13 @@ export default function Shop({
                         </div>
                       </div>
                       <div className="flex gap-1">
-                        <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="w-8 h-8 bg-gray-200 rounded-lg font-bold hover:bg-gray-300 flex items-center justify-center">−</button>
-                        <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="w-8 h-8 bg-gray-200 rounded-lg font-bold hover:bg-gray-300 flex items-center justify-center">+</button>
+                        <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="w-8 h-8 bg-[#ffffff00] rounded-lg font-bold hover:bg-gray-100 flex items-center justify-center">−</button>
+                        <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="w-8 h-8 bg-[#ffffff00] rounded-lg font-bold hover:bg-gray-100 flex items-center justify-center">+</button>
                       </div>
                     </div>
                   ))}
                 </div>
-                <button onClick={() => setCurrentPage('checkout')} className="w-full bg-green-500 text-white py-4 rounded-xl font-bold text-lg hover:bg-green-600 transition shadow-lg">
+                <button onClick={() => setCurrentPage('checkout')} className="w-full bg-[#239186] text-white py-4 rounded-xl font-bold text-lg hover:bg-[#1f7e74] transition shadow-lg">
                   <CreditCard size={24} className="inline-block mr-2" /> Passer commande
                 </button>
               </div>
