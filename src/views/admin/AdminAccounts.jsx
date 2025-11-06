@@ -24,7 +24,7 @@ export default function AdminAccounts({
           <p className="text-gray-600 mb-6">Vous n'avez pas les permissions d'accéder à cette page.</p>
           <button 
             onClick={() => setCurrentPage('shop')} 
-            className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700"
+            className="px-6 py-3 bg-[#e89b2b] text-white rounded-xl font-bold hover:bg-[#cf8726]"
           >
             Retour à la boutique
           </button>
@@ -65,13 +65,7 @@ export default function AdminAccounts({
                 <label className="block font-bold mb-2 text-sm">
                   Mot de passe {editingAccount ? '(vide = pas de changement)' : '*'}
                 </label>
-                <input
-                  type="password"
-                  value={accountForm.password}
-                  onChange={(e) => setAccountForm({...accountForm, password: e.target.value})}
-                  className="w-full px-4 py-3 border-2 rounded-xl focus:border-purple-500 outline-none"
-                  placeholder="••••••••"
-                />
+                 className="w-full px-4 py-3 border-2 rounded-xl focus:border-purple-500 outline-none"
                 {!editingAccount && <p className="text-xs text-gray-500 mt-1">Minimum 6 caractères</p>}
               </div>
               
@@ -81,8 +75,7 @@ export default function AdminAccounts({
                   type="text"
                   value={accountForm.name}
                   onChange={(e) => setAccountForm({...accountForm, name: e.target.value})}
-                  className="w-full px-4 py-3 border-2 rounded-xl focus:border-purple-500 outline-none"
-                  placeholder="Mohammed Ali"
+                  className="w-full px-4 py-3 border-2 rounded-xl focus:border-[#E3A750] outline-none"
                 />
               </div>
               
@@ -92,7 +85,7 @@ export default function AdminAccounts({
                   type="tel"
                   value={accountForm.phone}
                   onChange={(e) => setAccountForm({...accountForm, phone: e.target.value})}
-                  className="w-full px-4 py-3 border-2 rounded-xl focus:border-purple-500 outline-none"
+                  className="w-full px-4 py-3 border-2 rounded-xl focus:border-[#E3A750] outline-none"
                   placeholder="+213 555 123 456"
                 />
               </div>
@@ -134,29 +127,32 @@ export default function AdminAccounts({
             <button onClick={() => setCurrentPage('shop')} className="w-11 h-11 bg-indigo-500 text-white rounded-xl flex items-center justify-center hover:bg-indigo-600">
               <Store size={24} />
             </button>
-            <button onClick={handleLogout} className="w-11 h-11 bg-red-500 text-white rounded-xl flex items-center justify-center hover:bg-red-600">
+            <button onClick={handleLogout} className="w-11 h-11 bg-[#E0161E] text-white rounded-xl flex items-center justify-center hover:bg-[#E0161E]">
               <Power size={24} />
             </button>
           </div>
         </div>
       </div>
       
-      <div className="p-4">
-        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+      <div className="p-4 md:p-0">
+        <div className="md:relative fixed bottom-0 left-0 right-0 bg-white p-4 z-50 shadow-lg flex justify-around md:justify-start md:gap-2 md:mb-6 md:overflow-x-auto md:pb-2">
           <button 
             onClick={() => setCurrentPage('admin')} 
-            className="px-5 py-3 bg-white text-gray-700 rounded-xl font-bold hover:bg-gray-50 whitespace-nowrap shadow"
+            className="flex-1 flex items-center justify-center gap-2 md:flex-none md:px-5 py-3 bg-white text-gray-700 rounded-xl font-bold hover:bg-gray-50 md:whitespace-nowrap shadow"
           >
-            <Package size={20} className="inline-block mr-2" /> Commandes
+            <Package size={20} />
+            <span className="hidden md:inline">Commandes</span>
           </button>
           <button 
             onClick={() => setCurrentPage('admin-products')} 
-            className="px-5 py-3 bg-white text-gray-700 rounded-xl font-bold hover:bg-gray-50 whitespace-nowrap shadow"
+            className="flex-1 flex items-center justify-center gap-2 md:flex-none md:px-5 py-3 bg-white text-gray-700 rounded-xl font-bold hover:bg-gray-50 md:whitespace-nowrap shadow"
           >
-            <ShoppingBag size={20} className="inline-block mr-2" /> Produits
+            <ShoppingBag size={20} />
+            <span className="hidden md:inline">Produits</span>
           </button>
-          <button className="px-5 py-3 bg-purple-600 text-white rounded-xl font-bold whitespace-nowrap shadow-lg">
-            <Users size={20} className="inline-block mr-2" /> Comptes
+          <button className="flex-1 flex items-center justify-center gap-2 md:flex-none md:px-5 py-3 bg-purple-600 text-white rounded-xl font-bold md:whitespace-nowrap shadow-lg">
+            <Users size={20} />
+            <span className="hidden md:inline">Comptes</span>
           </button>
         </div>
 
@@ -164,7 +160,7 @@ export default function AdminAccounts({
           <h2 className="text-xl font-black"><Users size={24} className="inline-block mr-2" /> {accounts.length} comptes</h2>
           <button 
             onClick={() => openAccountModal()}
-            className="w-12 h-12 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl flex items-center justify-center hover:shadow-lg transition active:scale-95"
+            className="w-12 h-12 bg-gradient-to-r from-[#E3A750] to-[#E3A750] text-white rounded-xl flex items-center justify-center hover:shadow-lg transition active:scale-95"
           >
             <Plus size={24} />
           </button>
@@ -212,14 +208,14 @@ export default function AdminAccounts({
                 <div className="flex gap-2">
                   <button
                     onClick={() => openAccountModal(account)}
-                    className="flex-1 flex items-center justify-center gap-2 py-2 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition text-sm active:scale-95"
+                    className="flex-1 flex items-center justify-center gap-2 py-2 bg-[#239186] text-white rounded-xl font-semibold hover:bg-[#239186] transition text-sm active:scale-95"
                   >
                     <Edit2 size={16} />
                     Modifier
                   </button>
                   <button
                     onClick={() => handleDeleteAccount(account.id)}
-                    className="flex-1 flex items-center justify-center gap-2 py-2 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 transition text-sm active:scale-95"
+                    className="flex-1 flex items-center justify-center gap-2 py-2 bg-[#E0161E] text-white rounded-xl font-semibold hover:bg-[#E0161E] transition text-sm active:scale-95"
                   >
                     <Trash2 size={16} />
                     Supprimer

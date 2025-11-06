@@ -14,67 +14,93 @@ export default function MyOrders({
   return (
     <>
       {renderToasts()}
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-white shadow sticky top-0 z-50">
-          <div className="flex justify-between items-center p-4">
-            <img src="/logo.png" alt="BS EXPRESS" className="h-12" />
+      <div className="min-h-screen bg-gray-50 pb-6">
+        {/* Header */}
+        <div className="bg-white shadow-lg sticky top-0 z-50">
+          <div className="flex justify-between items-center p-3">
+            <img src="/logo.png" alt="BS EXPRESS" className="h-10" />
             <div className="flex gap-2">
-              <button onClick={() => setCurrentPage('shop')} className="w-11 h-11 bg-indigo-500 text-white rounded-xl flex items-center justify-center hover:bg-indigo-600">
-                <Store size={24} />
+              <button 
+                onClick={() => setCurrentPage('shop')} 
+                className="w-10 h-10 bg-indigo-500 text-white rounded-lg flex items-center justify-center hover:bg-indigo-600 active:scale-95 transition"
+              >
+                <Store size={20} />
               </button>
               {user?.isAdmin && (
-                <button onClick={() => setCurrentPage('admin')} className="w-11 h-11 bg-purple-500 text-white rounded-xl flex items-center justify-center hover:bg-purple-600">
-                  <Wrench size={24} />
+                <button 
+                  onClick={() => setCurrentPage('admin')} 
+                  className="w-10 h-10 bg-purple-500 text-white rounded-lg flex items-center justify-center hover:bg-purple-600 active:scale-95 transition"
+                >
+                  <Wrench size={20} />
                 </button>
               )}
-              <button onClick={handleLogout} className="w-11 h-11 bg-red-500 text-white rounded-xl flex items-center justify-center hover:bg-red-600">
-                <Power size={24} />
+              <button 
+                onClick={handleLogout} 
+                className="w-10 h-10 bg-red-500 text-white rounded-lg flex items-center justify-center hover:bg-red-600 active:scale-95 transition"
+              >
+                <Power size={20} />
               </button>
             </div>
           </div>
         </div>
 
-        <div className="p-4">
+        <div className="p-3">
           {userOrders.length === 0 ? (
-            <div className="bg-white rounded-2xl p-12 text-center shadow-lg mt-8">
-              <div className="text-6xl mb-4"><Package size={64} /></div>
-              <p className="text-gray-500 font-bold text-lg mb-4">Aucune commande</p>
+            <div className="bg-white rounded-xl p-8 text-center shadow-lg mt-6">
+              <Package size={56} className="mx-auto mb-3 text-gray-400" />
+              <p className="text-gray-500 font-bold text-base mb-4">Aucune commande</p>
               <button
                 onClick={() => setCurrentPage('shop')}
-                className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700"
+                className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 active:scale-95 transition text-sm"
               >
                 Commencer vos achats
               </button>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {userOrders.map(order => (
-                <div key={order.id} className="bg-white rounded-2xl p-4 shadow-lg border-2 border-blue-100">
-                  <div className="flex justify-between items-start mb-3">
+                <div key={order.id} className="bg-white rounded-xl p-3 shadow-lg border-2 border-blue-100">
+                  <div className="flex justify-between items-start mb-2.5">
                     <div>
-                      <h3 className="font-black text-lg">{order.orderNumber}</h3>
+                      <h3 className="font-black text-base">{order.orderNumber}</h3>
                       <p className="text-xs text-gray-600">{order.date} · {order.time}</p>
                     </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${order.status === 'Traitée' ? 'bg-green-100 text-green-700' : order.status === 'En cours' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'}`}>
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
+                      order.status === 'Traitée' ? 'bg-green-100 text-green-700' : 
+                      order.status === 'En cours' ? 'bg-blue-100 text-blue-700' : 
+                      'bg-orange-100 text-orange-700'
+                    }`}>
                       {order.status}
                     </span>
                   </div>
-                  <div className="bg-blue-50 rounded-xl p-3 mb-3">
-                    <p className="font-bold"><User size={16} className="inline-block mr-2" /> {order.clientName}</p>
-                    <p className="text-xs text-blue-600 font-semibold"><Phone size={16} className="inline-block mr-2" /> {order.clientPhone}</p>
-                    <p className="text-xs text-blue-600"><MapPin size={16} className="inline-block mr-2" /> {order.clientAddress}</p>
+                  
+                  <div className="bg-blue-50 rounded-lg p-2.5 mb-2.5">
+                    <p className="font-bold text-sm flex items-center gap-1.5">
+                      <User size={14} />
+                      {order.clientName}
+                    </p>
+                    <p className="text-xs text-blue-600 font-semibold flex items-center gap-1.5 mt-0.5">
+                      <Phone size={14} />
+                      {order.clientPhone}
+                    </p>
+                    <p className="text-xs text-blue-600 flex items-center gap-1.5 mt-0.5 truncate">
+                      <MapPin size={14} className="flex-shrink-0" />
+                      {order.clientAddress}
+                    </p>
                   </div>
-                  <div className="space-y-2 mb-3">
+                  
+                  <div className="space-y-1.5 mb-2.5">
                     {order.items.map(item => (
                       <div key={item.id} className="flex justify-between text-sm bg-gray-50 p-2 rounded-lg">
-                        <span>{item.name} x{item.quantity}</span>
-                        <span className="font-bold">{item.price * item.quantity} DZD</span>
+                        <span className="truncate flex-1 mr-2">{item.name} x{item.quantity}</span>
+                        <span className="font-bold whitespace-nowrap">{item.price * item.quantity} DZD</span>
                       </div>
                     ))}
                   </div>
-                  <div className="border-t-2 border-blue-200 pt-3 flex justify-between items-center">
-                    <span className="font-black">Total</span>
-                    <span className="font-black text-xl text-blue-600">{order.total} DZD</span>
+                  
+                  <div className="border-t-2 border-blue-200 pt-2.5 flex justify-between items-center">
+                    <span className="font-black text-sm">Total</span>
+                    <span className="font-black text-lg text-blue-600">{order.total} DZD</span>
                   </div>
                 </div>
               ))}

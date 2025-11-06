@@ -1,27 +1,24 @@
 import React from 'react';
-import { CheckCircle, AlertCircle, Info } from 'lucide-react';
+import { CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 
 export default function Toasts({ toasts }) {
   return (
-    <div className="fixed top-4 right-4 z-[1000] space-y-3">
-      {toasts.map(t => {
-        const isSuccess = t.type === 'success';
-        const isError = t.type === 'error';
-        const color = isSuccess ? 'text-green-600' : isError ? 'text-red-600' : 'text-[#002f45]';
-        const bar = isSuccess ? 'from-green-500 to-green-600' : isError ? 'from-red-500 to-red-600' : 'from-[#002f45] to-[#002f45]';
-        const Icon = isSuccess ? CheckCircle : isError ? AlertCircle : Info;
-        return (
-          <div key={t.id} className="relative pointer-events-auto flex items-start gap-3 rounded-2xl bg-white/95 backdrop-blur px-4 py-3 shadow-2xl ring-1 ring-black/5">
-            <span className={`absolute inset-y-0 left-0 w-1 rounded-l-2xl bg-gradient-to-b ${bar}`}></span>
-            <Icon size={20} className={color} />
-            <div className="text-sm">
-              <p className="font-semibold text-gray-900">{t.message}</p>
-            </div>
-          </div>
-        );
-      })}
+    <div className="fixed top-4 right-4 z-[9999] space-y-2 max-w-sm">
+      {toasts.map(toast => (
+        <div
+          key={toast.id}
+          className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg animate-slide-in ${
+            toast.type === 'success' ? 'bg-green-500 text-white' :
+            toast.type === 'error' ? 'bg-red-500 text-white' :
+            'bg-blue-500 text-white'
+          }`}
+        >
+          {toast.type === 'success' && <CheckCircle size={20} />}
+          {toast.type === 'error' && <XCircle size={20} />}
+          {toast.type === 'info' && <AlertCircle size={20} />}
+          <p className="text-sm font-semibold">{toast.message}</p>
+        </div>
+      ))}
     </div>
   );
 }
-
-
