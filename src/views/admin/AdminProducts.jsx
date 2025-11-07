@@ -37,82 +37,82 @@ export default function AdminProducts({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 pb-24">
-      {/* Modal */}
-      {showProductModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-5">
-          <div className="bg-white rounded-t-[2rem] sm:rounded-[2rem] p-5 max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-5 sticky top-0 bg-white pb-3 border-b-2 border-gray-100">
-              <h2 className="text-xl font-black text-gray-900 flex items-center gap-2">
-                {editingProduct ? <><Edit size={22} /> Modifier produit</> : <><Plus size={22} /> Nouveau produit</>}
-              </h2>
-              <button 
-                onClick={closeProductModal} 
-                className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-2xl active:scale-90 transition-all"
-              >
-                <X size={22} />
-              </button>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block font-bold mb-2 text-sm text-gray-700">Nom du produit</label>
-                <input
-                  type="text"
-                  value={productForm.name}
-                  onChange={(e) => setProductForm({...productForm, name: e.target.value})}
-                  className="w-full px-4 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-2xl focus:border-blue-500 focus:bg-white outline-none transition text-base"
-                  placeholder="Ex: Lait entier 1L"
-                />
-              </div>
-              
-              <div>
-                <label className="block font-bold mb-2 text-sm text-gray-700">Prix (DZD)</label>
-                <input
-                  type="number"
-                  value={productForm.price}
-                  onChange={(e) => setProductForm({...productForm, price: e.target.value})}
-                  className="w-full px-4 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-2xl focus:border-blue-500 focus:bg-white outline-none transition text-base"
-                  placeholder="150"
-                />
-              </div>
-              
-              <div>
-                <label className="block font-bold mb-2 text-sm text-gray-700">URL de l'image</label>
-                <input
-                  type="url"
-                  value={productForm.image}
-                  onChange={(e) => setProductForm({...productForm, image: e.target.value})}
-                  className="w-full px-4 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-2xl focus:border-blue-500 focus:bg-white outline-none transition text-base"
-                  placeholder="https://..."
-                />
-                {productForm.image && (
-                  <img 
-                    src={productForm.image} 
-                    alt="Aperçu" 
-                    className="mt-3 w-full h-48 object-cover rounded-2xl shadow-lg"
-                    onError={(e) => e.target.style.display = 'none'}
-                  />
-                )}
-              </div>
-            </div>
-              
-            <div className="flex gap-2 mt-5 pt-4 border-t-2 border-gray-100 sticky bottom-0 bg-white">
-              <button
-                onClick={handleSaveProduct}
-                className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3.5 rounded-2xl font-bold hover:shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-              >
-                {editingProduct ? <><Save size={18} /> Enregistrer</> : <><Plus size={18} /> Ajouter</>}
-              </button>
-              <button
-                onClick={closeProductModal}
-                className="px-5 py-3.5 bg-gray-100 text-gray-700 rounded-2xl font-bold hover:bg-gray-200 active:scale-[0.98] transition-all"
-              >
-                Annuler
-              </button>
-            </div>
-          </div>
+{/* Modal */}
+{showProductModal && (
+  <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
+    <div className="bg-white rounded-[2rem] p-5 max-w-lg w-full shadow-2xl my-8">
+      <div className="flex justify-between items-center mb-5 pb-3 border-b-2 border-gray-100">
+        <h2 className="text-xl font-black text-gray-900 flex items-center gap-2">
+          {editingProduct ? <><Edit size={22} /> Modifier produit</> : <><Plus size={22} /> Nouveau produit</>}
+        </h2>
+        <button 
+          onClick={closeProductModal} 
+          className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-2xl active:scale-90 transition-all"
+        >
+          <X size={22} />
+        </button>
+      </div>
+      
+      <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+        <div>
+          <label className="block font-bold mb-2 text-sm text-gray-700">Nom du produit</label>
+          <input
+            type="text"
+            value={productForm.name}
+            onChange={(e) => setProductForm({...productForm, name: e.target.value})}
+            className="w-full px-4 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-2xl focus:border-blue-500 focus:bg-white outline-none transition text-base"
+            placeholder="Ex: Lait entier 1L"
+          />
         </div>
-      )}
+        
+        <div>
+          <label className="block font-bold mb-2 text-sm text-gray-700">Prix (DZD)</label>
+          <input
+            type="number"
+            value={productForm.price}
+            onChange={(e) => setProductForm({...productForm, price: e.target.value})}
+            className="w-full px-4 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-2xl focus:border-blue-500 focus:bg-white outline-none transition text-base"
+            placeholder="150"
+          />
+        </div>
+        
+        <div>
+          <label className="block font-bold mb-2 text-sm text-gray-700">URL de l'image</label>
+          <input
+            type="url"
+            value={productForm.image}
+            onChange={(e) => setProductForm({...productForm, image: e.target.value})}
+            className="w-full px-4 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-2xl focus:border-blue-500 focus:bg-white outline-none transition text-base"
+            placeholder="https://..."
+          />
+          {productForm.image && (
+            <img 
+              src={productForm.image} 
+              alt="Aperçu" 
+              className="mt-3 w-full h-48 object-cover rounded-2xl shadow-lg"
+              onError={(e) => e.target.style.display = 'none'}
+            />
+          )}
+        </div>
+      </div>
+        
+      <div className="flex gap-2 mt-5 pt-4 border-t-2 border-gray-100">
+        <button
+          onClick={handleSaveProduct}
+          className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3.5 rounded-2xl font-bold hover:shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+        >
+          {editingProduct ? <><Save size={18} /> Enregistrer</> : <><Plus size={18} /> Ajouter</>}
+        </button>
+        <button
+          onClick={closeProductModal}
+          className="px-5 py-3.5 bg-gray-100 text-gray-700 rounded-2xl font-bold hover:bg-gray-200 active:scale-[0.98] transition-all"
+        >
+          Annuler
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-xl shadow-lg sticky top-0 z-40 border-b border-gray-100">

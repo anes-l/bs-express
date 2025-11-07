@@ -20,15 +20,7 @@ export default function Shop({
         {/* Header */}
         <div className="bg-white/80 backdrop-blur-xl shadow-lg sticky top-0 z-50 border-b border-gray-100">
           <div className="flex justify-between items-center p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-                <img src="/logo.png" alt="BS EXPRESS" className="h-8" />
-              </div>
-              <div>
-                <h1 className="font-black text-lg text-gray-900">BS EXPRESS</h1>
-                <p className="text-xs text-gray-500">Votre boutique</p>
-              </div>
-            </div>
+            <img src="/logo.webp" alt="BS EXPRESS" className="h-12 object-contain" />
             <div className="flex gap-2">
               {!user?.isAdmin && (
                 <button
@@ -110,7 +102,7 @@ export default function Shop({
         {/* Contenu */}
         <div className="p-4">
           {/* Bienvenue */}
-          <div className="mb-5 bg-gradient-to-br from-blue-600 to-purple-600 text-white p-5 rounded-3xl shadow-xl">
+          <div className="mb-5 bg-gradient-to-br from-blue-600 to-indigo-600 text-white p-5 rounded-3xl shadow-xl">
             <div className="flex items-center gap-3 mb-2">
               <Sparkles size={24} className="animate-pulse" />
               <div>
@@ -153,7 +145,7 @@ export default function Shop({
                   <div className="p-3">
                     <h3 className="font-bold text-sm mb-2 line-clamp-2 min-h-[2.5rem] text-gray-900">{product.name}</h3>
                     <div className="flex items-center justify-between">
-                      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-3 py-1.5 rounded-full">
+                      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-3 py-1.5 rounded-full">
                         <p className="text-base font-black">{product.price} DZD</p>
                       </div>
                     </div>

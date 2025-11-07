@@ -503,13 +503,15 @@ function App() {
     }
   }, [currentPage, user]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center">
-        <div className="text-white text-2xl font-bold">Chargement...</div>
+ if (loading) {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   if (currentPage === 'login') {
     return (
