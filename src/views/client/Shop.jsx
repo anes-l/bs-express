@@ -1,5 +1,5 @@
 import React from 'react';
-import { Package, Wrench, Power, ShoppingCart, CreditCard, Sparkles, Store } from 'lucide-react';
+import { Package, Wrench, Power, ShoppingCart, CreditCard, Sparkles, Store, Plus } from 'lucide-react';
 
 export default function Shop({
   user,
@@ -139,7 +139,7 @@ export default function Shop({
                   <div className="relative">
                     <img src={product.image} alt={product.name} className="w-full h-44 object-cover" />
                     <div className="absolute top-2 right-2 w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center shadow-lg">
-                      <span className="text-xl">➕</span>
+                      <Plus size={24} className="text-gray-900" />
                     </div>
                   </div>
                   <div className="p-3">

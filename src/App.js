@@ -365,72 +365,176 @@ function App() {
   const getTotalPrice = () => cart.reduce((total, item) => total + (item.price * item.quantity), 0);
   const getTotalItems = () => cart.reduce((total, item) => total + item.quantity, 0);
 
-  const generateInvoice = async () => {
-    const pdfDoc = new jsPDF();
-    
-    const addImageToPdf = () => {
-      return new Promise((resolve) => {
-        const logo = new Image();
-        logo.src = '/logo.png';
-        logo.onload = () => {
-          pdfDoc.addImage(logo, 'PNG', 85, 5, 50, 25);
+const generateInvoice = async () => {
+  const pdfDoc = new jsPDF();
+  
+  // Couleurs modernes
+  const primaryBlue = [37, 99, 235];
+  const darkGray = [31, 41, 55];
+  const lightGray = [243, 244, 246];
+  const mediumGray = [156, 163, 175];
+  
+  // Logo - Chargement depuis le dossier public
+  const addImageToPdf = () => {
+    return new Promise((resolve) => {
+      const logo = new Image();
+      logo.crossOrigin = 'anonymous';
+      logo.src = `${window.location.origin}/logo.webp`;
+      
+      logo.onload = () => {
+        try {
+          // Créer un canvas pour convertir le webp
+          const canvas = document.createElement('canvas');
+          canvas.width = logo.width;
+          canvas.height = logo.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(logo, 0, 0);
+          
+          // Convertir en dataURL (PNG pour compatibilité)
+          const imgData = canvas.toDataURL('image/png');
+          
+          // Ajouter au PDF
+          pdfDoc.addImage(imgData, 'PNG', 15, 10, 35, 35);
           resolve();
-        };
-      });
-    };
-
-    await addImageToPdf();
-    
-    pdfDoc.setFontSize(14);
-    pdfDoc.setTextColor(0, 0, 0);
-    pdfDoc.text('FACTURE', 105, 30, { align: 'center' });
-    
-    pdfDoc.setFontSize(10);
-    pdfDoc.text('Client:', 20, 45);
-    pdfDoc.setFontSize(12);
-    pdfDoc.setFont('helvetica', 'bold');
-    pdfDoc.text(checkoutName, 20, 52);
-    
-    pdfDoc.setFont('helvetica', 'normal');
-    pdfDoc.setFontSize(10);
-    pdfDoc.text(`Téléphone: ${checkoutPhone}`, 20, 58);
-    pdfDoc.text(`Adresse: ${checkoutAddress}`, 20, 64);
-    
-    const invoiceNumber = 'CMD-' + Date.now();
-    pdfDoc.text(`Numéro: ${invoiceNumber}`, 140, 45);
-    pdfDoc.text(`Date: ${new Date().toLocaleDateString('fr-FR')}`, 140, 51);
-    
-    const tableData = cart.map((item, index) => [
-      index + 1,
-      item.name,
-      item.quantity,
-      `${item.price} DZD`,
-      `${item.price * item.quantity} DZD`
-    ]);
-    
-    autoTable(pdfDoc, {
-      startY: 70,
-      head: [['#', 'Produit', 'Qté', 'Prix unit.', 'Total']],
-      body: tableData,
-      theme: 'striped',
-      headStyles: { fillColor: [99, 102, 241] },
-      margin: { left: 20, right: 20 }
+        } catch (error) {
+          console.error('Erreur lors du chargement du logo:', error);
+          resolve(); // Continue même si erreur
+        }
+      };
+      
+      logo.onerror = (error) => {
+        console.error('Erreur de chargement du logo:', error);
+        resolve(); // Continue sans logo
+      };
     });
-    
-    const finalY = pdfDoc.lastAutoTable.finalY + 10;
-    pdfDoc.setFontSize(12);
-    pdfDoc.setFont('helvetica', 'bold');
-    pdfDoc.text(`TOTAL: ${getTotalPrice()} DZD`, 150, finalY, { align: 'right' });
-    
-    pdfDoc.setFont('helvetica', 'normal');
-    pdfDoc.setFontSize(8);
-    pdfDoc.setTextColor(100, 100, 100);
-    pdfDoc.text('Merci pour votre achat !', 105, 280, { align: 'center' });
-    pdfDoc.text('Zone de livraison: Tlemcen', 105, 285, { align: 'center' });
-    
-    pdfDoc.save(`facture-${invoiceNumber}.pdf`);
-    showToast('success', 'Facture générée avec succès !');
   };
+
+  await addImageToPdf();
+  
+  // En-tête bleu
+  pdfDoc.setFillColor(primaryBlue[0], primaryBlue[1], primaryBlue[2]);
+  pdfDoc.rect(0, 0, 210, 55, 'F');
+  
+  // Titre "FACTURE"
+  pdfDoc.setTextColor(255, 255, 255);
+  pdfDoc.setFontSize(28);
+  pdfDoc.setFont('helvetica', 'bold');
+  pdfDoc.text('FACTURE', 145, 25);
+  
+  // Numéro et date
+  const invoiceNumber = 'CMD-' + Date.now();
+  pdfDoc.setFontSize(10);
+  pdfDoc.setFont('helvetica', 'normal');
+  pdfDoc.text('Numero: ' + invoiceNumber, 145, 35);
+  pdfDoc.text('Date: ' + new Date().toLocaleDateString('fr-FR'), 145, 42);
+  
+  // Section client
+  pdfDoc.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
+  pdfDoc.roundedRect(15, 65, 180, 32, 3, 3, 'F');
+  
+  pdfDoc.setFontSize(9);
+  pdfDoc.setFont('helvetica', 'bold');
+  pdfDoc.setTextColor(mediumGray[0], mediumGray[1], mediumGray[2]);
+  pdfDoc.text('CLIENT', 20, 72);
+  
+  pdfDoc.setFontSize(12);
+  pdfDoc.setFont('helvetica', 'bold');
+  pdfDoc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
+  pdfDoc.text(checkoutName, 20, 81);
+  
+  pdfDoc.setFontSize(9);
+  pdfDoc.setFont('helvetica', 'normal');
+  pdfDoc.setTextColor(mediumGray[0], mediumGray[1], mediumGray[2]);
+  pdfDoc.text('Tel: ' + checkoutPhone, 20, 87);
+  pdfDoc.text('Adresse: ' + checkoutAddress, 20, 93);
+  
+  // Tableau des articles
+  const tableData = cart.map((item, index) => {
+    const price = Number(item.price);
+    const quantity = Number(item.quantity);
+    const total = price * quantity;
+    
+    return [
+      String(index + 1),
+      item.name,
+      String(quantity),
+      String(price) + ' DZD',
+      String(total) + ' DZD'
+    ];
+  });
+  
+  autoTable(pdfDoc, {
+    startY: 107,
+    head: [['#', 'Article', 'Qte', 'Prix unitaire', 'Total']],
+    body: tableData,
+    theme: 'plain',
+    headStyles: {
+      fillColor: [255, 255, 255],
+      textColor: [darkGray[0], darkGray[1], darkGray[2]],
+      fontStyle: 'bold',
+      fontSize: 9,
+      cellPadding: 4,
+      lineWidth: 0.1,
+      lineColor: [lightGray[0], lightGray[1], lightGray[2]],
+      halign: 'left'
+    },
+    bodyStyles: {
+      textColor: [darkGray[0], darkGray[1], darkGray[2]],
+      fontSize: 9,
+      cellPadding: 5,
+      halign: 'left'
+    },
+    alternateRowStyles: {
+      fillColor: [lightGray[0], lightGray[1], lightGray[2]],
+    },
+    columnStyles: {
+      0: { cellWidth: 12, halign: 'center', fontStyle: 'bold' },
+      1: { cellWidth: 80, halign: 'left' },
+      2: { cellWidth: 15, halign: 'center' },
+      3: { cellWidth: 35, halign: 'right' },
+      4: { cellWidth: 38, halign: 'right', fontStyle: 'bold' }
+    },
+    margin: { left: 15, right: 15 }
+  });
+  
+  // Total
+  const finalY = pdfDoc.lastAutoTable.finalY + 8;
+  const totalAmount = getTotalPrice();
+  
+  // Box pour le total
+  pdfDoc.setFillColor(primaryBlue[0], primaryBlue[1], primaryBlue[2]);
+  pdfDoc.roundedRect(120, finalY, 75, 18, 3, 3, 'F');
+  
+  pdfDoc.setFontSize(12);
+  pdfDoc.setFont('helvetica', 'bold');
+  pdfDoc.setTextColor(255, 255, 255);
+  pdfDoc.text('TOTAL', 127, finalY + 7);
+  
+  pdfDoc.setFontSize(16);
+  pdfDoc.text(String(totalAmount) + ' DZD', 188, finalY + 12, { align: 'right' });
+  
+  // Pied de page
+  const pageHeight = pdfDoc.internal.pageSize.height;
+  
+  pdfDoc.setDrawColor(lightGray[0], lightGray[1], lightGray[2]);
+  pdfDoc.setLineWidth(0.3);
+  pdfDoc.line(15, pageHeight - 30, 195, pageHeight - 30);
+  
+  pdfDoc.setFontSize(10);
+  pdfDoc.setFont('helvetica', 'bold');
+  pdfDoc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
+  pdfDoc.text('Merci pour votre confiance !', 105, pageHeight - 22, { align: 'center' });
+  
+  pdfDoc.setFontSize(8);
+  pdfDoc.setFont('helvetica', 'normal');
+  pdfDoc.setTextColor(mediumGray[0], mediumGray[1], mediumGray[2]);
+  pdfDoc.text('BS EXPRESS - Zone de livraison: Tlemcen', 105, pageHeight - 16, { align: 'center' });
+  pdfDoc.text('Cette facture est generee automatiquement', 105, pageHeight - 11, { align: 'center' });
+  
+  // Sauvegarde
+  pdfDoc.save('facture-' + invoiceNumber + '.pdf');
+  showToast('success', 'Facture telechargee avec succes !');
+};
 
   const handleCheckout = async () => {
     if (!checkoutName || !checkoutPhone || !checkoutAddress) {
