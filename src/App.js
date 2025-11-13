@@ -1,5 +1,4 @@
 import React from 'react';
-import { ShoppingCart, Plus, LogOut, User, Phone, MapPin, Edit2, Trash2, X, Users, FileText } from 'lucide-react';
 import Toasts from './components/Toasts';
 import AdminOrders from './views/admin/AdminOrders';
 import AdminProducts from './views/admin/AdminProducts';
@@ -94,7 +93,7 @@ function App() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [currentPage]);
 
   const loadOrders = React.useCallback(async () => {
     try {
